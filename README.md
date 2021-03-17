@@ -12,7 +12,7 @@ The DRESS Kit is designed with the following groups of users in mind:
 - A group of investigators working remotely across multiple sites. The lead investigator can distribute the finalized script electronically to each site investigator or host the script on a password-protected website to ensure that data from every site is processed in the same manner.
 - An advanced user may integrate the DRESS Kit into another web/mobile app development framework to enable real-time statistical analysis in any JavaScript-based applications.
 
-## Prerequisite
+## Prerequisites
 The following prerequisites are necessary to take full advantage of the DRESS Kit:
 - A basic understanding of simple statistics terminology (e.g. mean, standard deviation, odds ratio, risk ratio, etc).
 - A basic understanding of JavaScript programming (e.g. variable declaration, array manipulation, function invocation, etc).
@@ -42,11 +42,6 @@ The DRESS Kit is written in plain ES6 JavaScript. Decision is made, however, to 
 	- `DRESS.output` - Output HTML-formatted text onto the HTML document.
 	- `DRESS.download` - Download the specified content as a file.
 
-- `dress-descriptive.js` contains methods for performing descriptive analysis. All methods in this module expect an array of objects, often an array of subjects in a case-control or cohort study, as an input. 
-	- `DRESS.proportions` - Calculate the proportion of subjects that a positive outcome, and optionally compare the result to that of a second group of subjects.
-	- `DRESS.frequencies` - Calculate the frequency of occurrence for each outcome value, and optionally compare the result to that of a second group of subjects.
-	- `DRESS.means` - Calculate the statistical mean for each outcome, and optionally compare the result to that of a second group of subjects.
-
 - `dress-transform.js` contains methods for simple data transformation. All methods in this module expect an array of objects, often an array of subjects in a case-control or cohort study, as an input. 
 	- `DRESS.normalize` - Normalize the specified features so that their values fall in the range of [0, 1].
 	- `DRESS.standardize` - Standardize the specified features so that their values have an arithmetic mean of 0 and a standard deviation of 1.
@@ -54,6 +49,19 @@ The DRESS Kit is written in plain ES6 JavaScript. Decision is made, however, to 
 	- `DRESS.categorize` - Categorize the values of the specified feature and encode the result using numerical values.
 	- `DRESS.organize` - Organize the subjects into groups based on the specified feature.
 	- `DRESS.synthesize` - Synthesize an array of new objects by merging several arrays of objects based on the specified feature.
+
+- `dress-sorting.js` contains methods for sorting array of objects. All methods in this module expect an array of objects, often an array of subjects in a case-control or cohort study, as an input. 
+	- `DRESS.sort` - Multilevel mixed data type sorting.
+
+- `dress-imputation.js` contains methods for imputing missing values. All methods in this module expect an array of objects, often an array of subjects in a case-control or cohort study, as an input. 
+	- `DRESS.meanMode` - Mean mode imputation.
+	- `DRESS.locf` - Last observation carried forward imputation.
+	- `DRESS.knn` - K-nearest-neighbor imputation.
+
+- `dress-descriptive.js` contains methods for performing descriptive analysis. All methods in this module expect an array of objects, often an array of subjects in a case-control or cohort study, as an input. 
+	- `DRESS.proportions` - Calculate the proportion of subjects that a positive outcome, and optionally compare the result to that of a second group of subjects.
+	- `DRESS.frequencies` - Calculate the frequency of occurrence for each outcome value, and optionally compare the result to that of a second group of subjects.
+	- `DRESS.means` - Calculate the statistical mean for each outcome, and optionally compare the result to that of a second group of subjects.
 
 - `dress-association.js` contains methods for assessing the association between outcomes and exposures. All methods in this module expect an array of objects, often an array of subjects in a case-control or cohort study, as well as a list of outcomes and exposures as inputs.
 	- `DRESS.oddsRatios` - Calculate the odds of an event in the exposed group relative to that in the unexposed group.
