@@ -214,6 +214,7 @@ var DRESS;
                     measures: [
                         {
                             measure: 'attributableRisk',
+                            value: AR,
                             ci: ci_AR,
                             z: z_AR,
                             p: p_AR,
@@ -222,6 +223,7 @@ var DRESS;
                         },
                         {
                             measure: 'attributableFraction',
+                            value: AF,
                             ci: ci_AF,
                             z: z_AF,
                             p: p_AF,

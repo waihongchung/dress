@@ -37,6 +37,7 @@ var DRESS;
             if (values.length === subjects.length) {
                 return {
                     feature: feature,
+                    name: null,
                     count: 0,
                     value: null,
                     text: DRESS.padEnd(feature, pad) + ': NO NULL VALUES.'
@@ -45,6 +46,7 @@ var DRESS;
             else if (values.length === 0) {
                 return {
                     feature: feature,
+                    name: null,
                     count: subjects.length,
                     value: null,
                     text: DRESS.padEnd(feature, pad) + ': NO NON-NULL VALUES.'
