@@ -43,7 +43,8 @@ var DRESS;
         }
         return {
             steps: steps,
-            model: model
+            model: model,
+            text: ''
         };
     };
     /**
@@ -93,7 +94,8 @@ var DRESS;
         }
         return {
             steps: steps,
-            model: model
+            model: model,
+            text: ''
         };
     };
 })(DRESS || (DRESS = {}));

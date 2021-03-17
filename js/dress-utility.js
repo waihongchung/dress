@@ -14,16 +14,16 @@ var DRESS;
         const html = (Array.isArray(results) ? results : [results]).filter(result => result).map(result => {
             const keys = Object.keys(result);
             let output = '';
-            if (result['text']) {
+            if (typeof result['text'] === 'string') {
                 const html = document.createElement('div').appendChild(document.createTextNode(result['text'])).parentNode.innerHTML;
                 output += ((typeof result['p'] === 'number') && (result['p'] < DRESS.SIGNIFICANCE)) ? '<span class="highlight">' + html + '</span>' : html;
+                keys.map(key => {
+                    if (typeof result[key] === 'object') {
+                        const html = DRESS.text(result[key]);
+                        output += html ? '<div>' + html + '</div>' : '';
+                    }
+                });
             }
-            keys.map(key => {
-                if (typeof result[key] === 'object') {
-                    const html = DRESS.text(result[key]);
-                    output += html ? '<div>' + html + '</div>' : '';
-                }
-            });
             return output ? '<p>' + output + '</p>' : '';
         }).join('');
         return html ? '<pre>' + html + '</pre>' : '';
