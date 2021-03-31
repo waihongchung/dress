@@ -1,4 +1,4 @@
-Age,Gender,BMI,Race,Smoking,Alcohol,Etiology,Disease Duration,Comorbidities,HA1C,EGD,PPI,Metoclopramide,Erythromycin,Nausea,Pain,QoL
+Age,Gender,BMI,Race,Smoking,Alcohol,Etiology,Disease Duration,Comorbidities,HA1C,EGD,Medications.PPI,Medications.Metoclopramide,Medications.Erythromycin,Scales.Nausea,Scales.Pain,Scales.QoL
 35,M,35,Caucasian,Never,Rare,Diabetic,3,"Hypertension,Dyslipidemia,Diabetes,GERD",7.1,0,40,0,1,5,2,96
 36,M,32,Caucasian,Never,Rare,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,GERD",8.1,0,40,0,1,4,7,86
 42,M,29,Caucasian,Former,Social,Diabetic,5,"Dyslipidemia,Diabetes,GERD",10.3,1,20,0,0,5,2,57
