@@ -8,7 +8,7 @@ The DRESS Kit is a collection of scripts specifically designed to address this d
 
 ## Suggested Use Cases
 The DRESS Kit is designed with the following groups of users in mind:
-- A lone investigator working on an unfunded retrospective case-control or cohort study. The investigator may develop a script using the DRESS Kit by working against a sample dataset at home. The finalized script can be sent by email and launched on the secure workstation where the PHI-containing full dataset is stored.
+- A lone investigator working on an unfunded retrospective case-control or cohort study. The investigator may develop a script using the DRESS Kit by working against a sample dataset at home. The finalized script can be sent by email and launched on the secure workstation, where the PHI-containing full dataset is stored.
 - A group of investigators working remotely across multiple sites. The lead investigator can distribute the finalized script electronically to each site investigator or host the script on a password-protected website to ensure that data from every site is processed in the same manner.
 - An advanced user may integrate the DRESS Kit into another web/mobile app development framework to enable real-time statistical analysis in any JavaScript-based applications.
 
@@ -25,11 +25,17 @@ The following prerequisites are necessary to take full advantage of the DRESS Ki
 3.	Open `example1.htm` in the `examples` folder using a browser.
 4.	Click on `Choose File` and select the sample dataset `data.json` included in the `data` folder.
 5.	Open `example1.js` in a text editor.
-6.	Make any changes as you see fit. Save any changes.
+6.	Make changes to the `processJSON` function. Save any changes.
 7.	Refresh the browser to relaunch the example.
+
+## General Instructions
+Most methods contained in the DRESS Kit are designed to work on an array of objects, instead of a table. In most situations, each object represents a study subject or a test sample. Each data point is stored as a property of the object. This approach allows for a hierarchical data structure that may be otherwise difficult to achieve using tables. For instance, each patient may be associated with more than one hospital admission, and each admission may be associated with more than one procedure. This approach also allows related data points to be logically organized. For instance, all pre-admission test results can be grouped under the preadmission data object, while the post-admission test results can be grouped under the postadmission data object.
+
+Datasets that are stored in a spreadsheet can be exported as a CSV file and then converted into the JSON format using the `DRESS.fromCSV` method. Each row represents a subject and each column represents a property of the subject. The header row is used as the name of the properties. The DRESS Kit supports the use of dot notation for property names. For instance, you can use `labs.hemoglobin`, `labs.platelet`, and `labs.sodium` as column headers in the CSV file. You can then access all the labs results as `labs`, or indvidual lab result as `labs.hemoglobin`, `labs.platelet`, etc.
 
 ## Toolkit Content
 The DRESS Kit is written in plain ES6 JavaScript. Decision is made, however, to NOT use the ES6 module system because it can create Cross-Origin Resource Sharing (CORS) errors when the script is run on a local machine. Instead, a custom-made pseudo-module system is used to breakdown the toolkit into smaller ‘modules’.
+
 - `dress-core.js` contains a number of core statistical methods used by other modules. It is not intended to be used directly by end users, but it MUST be included at all times.
 
 - `dress-csv.js` contains methods for parsing and generating comma-separated-values (CSV).
@@ -42,36 +48,46 @@ The DRESS Kit is written in plain ES6 JavaScript. Decision is made, however, to 
 	- `DRESS.output` - Output HTML-formatted text onto the HTML document.
 	- `DRESS.download` - Download the specified content as a file.
 
-- `dress-transform.js` contains methods for simple data transformation. All methods in this module expect an array of objects, often an array of subjects in a case-control or cohort study, as an input. 
+- `dress-transform.js` contains methods for data transformation.
 	- `DRESS.normalize` - Normalize the specified features so that their values fall in the range of [0, 1].
 	- `DRESS.standardize` - Standardize the specified features so that their values have an arithmetic mean of 0 and a standard deviation of 1.
 	- `DRESS.booleanize` - Reduce the values of the specified feature into a boolean value (i.e. true or false).
 	- `DRESS.categorize` - Categorize the values of the specified feature and encode the result using numerical values.
-	- `DRESS.organize` - Organize the subjects into groups based on the specified feature.
-	- `DRESS.synthesize` - Synthesize an array of new objects by merging several arrays of objects based on the specified feature.
+	- `DRESS.id` - Generate a UUID for each subject.
+	- `DRESS.group` - Organize the subjects into groups based on the specified feature.
+	- `DRESS.merge` - Create a new array of subjects by merging several arrays of subjects based on the values of the specified feature.
+	- `DRESS.pluck` - Create a new array of containing the values of the specified feature, and optionally add a back reference to the subject.
 
-- `dress-sorting.js` contains methods for sorting array of objects. All methods in this module expect an array of objects, often an array of subjects in a case-control or cohort study, as an input. 
+- `dress-sorting.js` contains methods for sorting array of subjects.
 	- `DRESS.sort` - Multilevel mixed data type sorting.
 
-- `dress-imputation.js` contains methods for imputing missing values. All methods in this module expect an array of objects, often an array of subjects in a case-control or cohort study, as an input. 
-	- `DRESS.meanMode` - Mean mode imputation.
+- `dress-outlier.js` contains methods for identifying outlying values.
+	- `DRESS.boxplot` - Outlier detection using boxplot.
+	- `DRESS.grubbs` - Outlier detection using the Grubbs' test.
+
+- `dress-imputation.js` contains methods for imputing missing values.
+	- `DRESS.meanMode` - Mean/mode imputation.
 	- `DRESS.locf` - Last observation carried forward imputation.
 	- `DRESS.knn` - K-nearest-neighbor imputation.
 
-- `dress-descriptive.js` contains methods for performing descriptive analysis. All methods in this module expect an array of objects, often an array of subjects in a case-control or cohort study, as an input. 
+- `dress-descriptive.js` contains methods for performing descriptive analysis.
 	- `DRESS.proportions` - Calculate the proportion of subjects that a positive outcome, and optionally compare the result to that of a second group of subjects.
 	- `DRESS.frequencies` - Calculate the frequency of occurrence for each outcome value, and optionally compare the result to that of a second group of subjects.
 	- `DRESS.means` - Calculate the statistical mean for each outcome, and optionally compare the result to that of a second group of subjects.
+	- `DRESS.medians` - Locate the medians of the specified features, and optionally compare the result to that of a second group of subjects.
 
-- `dress-association.js` contains methods for assessing the association between outcomes and exposures. All methods in this module expect an array of objects, often an array of subjects in a case-control or cohort study, as well as a list of outcomes and exposures as inputs.
+- `dress-correlation.js` contains methods for assessing correlations amongst features.
+	- `DRESS.correlations` - Calculate the degree of correlation between the specified features.
+
+- `dress-association.js` contains methods for assessing the association between outcomes and exposures.
 	- `DRESS.oddsRatios` - Calculate the odds of an event in the exposed group relative to that in the unexposed group.
 	- `DRESS.riskRatios` - Calculate the risk of an event in the exposed group relative to that in the unexposed group.
 	- `DRESS.effectMeasures` - Compute a list of effect measures based on outcomes and exposures.
 
-- `dress-regression.js` contains methods for building various regression models. All methods in this module expect an array of objects, often an array of subjects in a case-control or cohort study, as well as a list of outcomes and features as inputs.
-	- `DRESS.logistic` - Perform multiple logistic regressions.
-	- `DRESS.linear` - Perform multiple linear regressions.
-	- `DRESS.polynomial` - Perform simple polynomial regressions.
+- `dress-regression.js` contains methods for building various regression models.
+	- `DRESS.logistic` - Multiple logistic regressions.
+	- `DRESS.linear` - Multiple linear regressions.
+	- `DRESS.polynomial` - Simple polynomial regression.
 
 - `dress-roc.js` contains methods for generating receiver operating characteristic curve.
 	- `DRESS.roc` - Generate a nonparametic receiver operating characteristic curve based on one or more binary classifiers.
@@ -79,13 +95,6 @@ The DRESS Kit is written in plain ES6 JavaScript. Decision is made, however, to 
 - `dress-stepwise.js` contains methods for building regression models using the stepwise feature selection algorithms.
 	- `DRESS.backward` - Apply the backward elimination algorithm on a set of features.
 	- `DRESS.forward` - Apply the forward selection algorithm on a set of features.	
-
-## Usage
-Because the DRESS Kit is written in plain ES6 JavaScript, it can be used in any JavaScript or TypeScript projects without any special framework dependencies. 
-
-For the average users, consider using one of the examples as a template: change the HTML header to include any necessary ‘modules’, then edit the `processJSON` function to perform any statistical computation on the dataset, and finally, use the `DRESS.output` method to print the results onto the HTML. 
-
-Dataset that are stored in a spreadsheet can be exported as a CSV file and then converted into the JSON format using the `DRESS.fromCSV` method.
 
 ## Contribution
 The DRESS Kit is certainly a work-in-progress. Please feel free to contribute by making bug reports, comments, suggestions, and pull requests.
