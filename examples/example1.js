@@ -13,10 +13,13 @@ function processJSON(subjects) {
     DRESS.output('<b>All Subjects</b>');
     DRESS.output(
         DRESS.text(
-            DRESS.means(subjects, ['Age', 'BMI', 'Disease Duration', 'HA1C', 'Nausea', 'Pain', 'QoL'])
+            DRESS.means(subjects, ['Age', 'BMI', 'Disease Duration', 'HA1C'])
         ) +
         DRESS.text(
-            DRESS.proportions(subjects, ['EGD', 'Metoclopramide', 'Erythromycin'])
+            DRESS.medians(subjects, ['Scales.Nausea', 'Scales.Pain', 'Scales.QoL'])
+        ) +
+        DRESS.text(
+            DRESS.proportions(subjects, ['EGD', 'Medications.PPI', 'Medications.Metoclopramide', 'Medications.Erythromycin'])
         ) +
         DRESS.text(
             DRESS.frequencies(subjects, ['Gender', 'Race', 'Smoking', 'Alcohol', 'Etiology', 'Comorbidities'])
@@ -29,14 +32,16 @@ function processJSON(subjects) {
     DRESS.output('<b>Male vs Female</b>');
     DRESS.output(
         DRESS.text(
-            DRESS.means(males, ['Age', 'BMI', 'Disease Duration', 'HA1C', 'Nausea', 'Pain', 'QoL'], females)
+            DRESS.means(males, ['Age', 'BMI', 'Disease Duration', 'HA1C'], females)
         ) +
         DRESS.text(
-            DRESS.proportions(males, ['EGD', 'Metoclopramide', 'Erythromycin'], females)
+            DRESS.medians(males, ['Scales.Nausea', 'Scales.Pain', 'Scales.QoL'], females)
+        ) +
+        DRESS.text(
+            DRESS.proportions(males, ['EGD', 'Medications.PPI', 'Medications.Metoclopramide', 'Medications.Erythromycin'], females)
         ) +
         DRESS.text(
             DRESS.frequencies(males, ['Race', 'Smoking', 'Alcohol', 'Etiology', 'Comorbidities'], females)
         )
     );
-
 }

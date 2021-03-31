@@ -9,12 +9,11 @@ function readJSON(input) {
 }
 
 function processJSON(subjects) {
+    DRESS.output('<b>Sorting</b>'); 
 
     DRESS.output(
         DRESS.text(
-            DRESS.correlations(subjects, ['Age', 'Disease Duration', 'BMI', 'HA1C', 'Scales.Nausea', 'Scales.Pain', 'Medications.PPI'])
+            DRESS.sort(subjects, ['Age', 'BMI', 'HA1C'])
         )
     );
-
 }
-

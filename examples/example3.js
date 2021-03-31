@@ -18,29 +18,34 @@ function processJSON(subjects) {
     DRESS.booleanize(subjects, 'Smoking', ['Former', 'Current']);
     DRESS.booleanize(subjects, 'Alcohol', ['Former', 'Frequent']);
     //
-    subjects.map(subject => {
-        subject['Age 45+'] = (+subject['Age'] >= 45);
-        subject['PPI'] = (+subject['PPI'] > 0);        
-    });
-    //
 
     DRESS.output('<b>Odds Ratio</b>');
     DRESS.output(
         DRESS.text(
-            DRESS.oddsRatios(subjects, ['Diabetic Gastroparesis'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Age 45+'])
+            DRESS.oddsRatios(subjects, ['Diabetic Gastroparesis'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
         ) +
         DRESS.text(
-            DRESS.oddsRatios(subjects, ['EGD', 'PPI'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Age 45+'])
+            DRESS.oddsRatios(subjects, ['EGD', 'Medications.PPI'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
         )
     );
 
     DRESS.output('<b>Risk Ratio</b>');
     DRESS.output(
         DRESS.text(
-            DRESS.riskRatios(subjects, ['Diabetic Gastroparesis'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Age 45+'])
+            DRESS.riskRatios(subjects, ['Diabetic Gastroparesis'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
         ) +
         DRESS.text(
-            DRESS.riskRatios(subjects, ['EGD', 'PPI'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Age 45+'])
+            DRESS.riskRatios(subjects, ['EGD', 'Medications.PPI'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
+        )
+    );
+
+    DRESS.output('<b>Effect Measures</b>');
+    DRESS.output(
+        DRESS.text(
+            DRESS.effectMeasures(subjects, ['Diabetic Gastroparesis'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
+        ) +
+        DRESS.text(
+            DRESS.effectMeasures(subjects, ['EGD', 'Medications.PPI'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
         )
     );
 }

@@ -9,37 +9,23 @@ function readJSON(input) {
 }
 
 function processJSON(subjects) {
-    // Transform Data
-    DRESS.booleanize(subjects, 'Gender', ['M'], 'Male');
-    DRESS.booleanize(subjects, 'Etiology', ['Diabetic'], 'Diabetic Gastroparesis');
-    DRESS.booleanize(subjects, 'Comorbidities', ['Hypertension'], 'Hypertension');
-    DRESS.booleanize(subjects, 'Comorbidities', ['Diabetes'], 'Diabetes');
-    DRESS.booleanize(subjects, 'Comorbidities', ['GERD'], 'GERD');
-    DRESS.booleanize(subjects, 'Smoking', ['Former', 'Current']);
-    DRESS.booleanize(subjects, 'Alcohol', ['Former', 'Frequent']);
-    //
-    subjects.map(subject => {        
-        subject['PPI'] = (+subject['PPI'] > 0);
-    });
-    //
-    DRESS.output('<b>Multiple Logistic Regression</b>');
+
+    const len = subjects.length;
+    let i = 10;
+    while (i--) {
+        subjects[Math.floor(Math.random() * len)]['Age'] = +subjects[Math.floor(Math.random() * len)]['Age'] + Math.random() * 50;
+        subjects[Math.floor(Math.random() * len)]['BMI'] = +subjects[Math.floor(Math.random() * len)]['BMI'] + Math.random() * 50;
+        subjects[Math.floor(Math.random() * len)]['HA1C'] = +subjects[Math.floor(Math.random() * len)]['HA1C'] + Math.random() * 50;
+        subjects[Math.floor(Math.random() * len)]['Scales']['QoL'] = +subjects[Math.floor(Math.random() * len)]['Scales']['QoL'] + Math.random() * 50;
+    }
+
     DRESS.output(
         DRESS.text(
-            DRESS.logistic(subjects, ['EGD', 'PPI'], ['Age', 'Disease Duration', 'BMI', 'HA1C', 'Male', 'Hypertension', 'Diabetes', 'GERD', 'Smoking', 'Alcohol'])
-        )
-    );
-    //
-    DRESS.output('<b>Backward Elimination</b>');
-    DRESS.output(
+            DRESS.boxplot(subjects, ['Age', 'BMI', 'HA1C', 'Scales.QoL'], false)
+        ) +
         DRESS.text(
-            DRESS.backward(DRESS.logistic, subjects, ['EGD', 'PPI'], ['Age', 'Disease Duration', 'BMI', 'HA1C', 'Male', 'Hypertension', 'Diabetes', 'GERD', 'Smoking', 'Alcohol'])
+            DRESS.grubbs(subjects, ['Age', 'BMI', 'HA1C', 'Scales.QoL'], true)
         )
     );
-    //
-    DRESS.output('<b>Forward Selection</b>');
-    DRESS.output(
-        DRESS.text(
-            DRESS.forward(DRESS.logistic, subjects, ['EGD', 'PPI'], ['Age', 'Disease Duration', 'BMI', 'HA1C', 'Male', 'Hypertension', 'Diabetes', 'GERD', 'Smoking', 'Alcohol'])
-        )
-    );
+
 }

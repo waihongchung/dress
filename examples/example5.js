@@ -9,30 +9,61 @@ function readJSON(input) {
 }
 
 function processJSON(subjects) {
-    // Transform Data
-    DRESS.booleanize(subjects, 'Gender', ['M'], 'Male');
-    DRESS.booleanize(subjects, 'Etiology', ['Diabetic'], 'Diabetic Gastroparesis');
-    DRESS.booleanize(subjects, 'Comorbidities', ['Hypertension'], 'Hypertension');
-    DRESS.booleanize(subjects, 'Comorbidities', ['Diabetes'], 'Diabetes');
-    DRESS.booleanize(subjects, 'Comorbidities', ['GERD'], 'GERD');
-    DRESS.booleanize(subjects, 'Smoking', ['Former', 'Current']);
-    DRESS.booleanize(subjects, 'Alcohol', ['Former', 'Frequent']);
-    //
-    subjects.map(subject => {
-        subject['PPI'] = (+subject['PPI'] > 0);
+    // Randomly split the dataset to 80% training and 20% testing per etiology.
+    const trainings = [];
+    const testings = [];
+    subjects.map(subject => subject['Etiology']).filter((etiology, index, etiologies) => etiologies.indexOf(etiology) === index).map(etiology => {
+        subjects.filter(subject => subject['Etiology'] === etiology).map(subject => {
+            if (Math.random() < 0.8) {
+                trainings.push(subject);
+            } else {
+                testings.push(subject);
+            }
+        });
+    });
+    // Set the etiology in the testing set to null.
+    testings.map(subject => {
+        subject['Actual Etiology'] = subject['Etiology'];
+        subject['Etiology'] = null;
     });
     //
-    DRESS.output('<b>ROC Curve</b>');
+    DRESS.output('<b>KNN Imputation</b>');
     DRESS.output(
         DRESS.text(
-            DRESS.roc(subjects, ['Erythromycin'], ['Age', 'Disease Duration', 'HA1C', 'Nausea', 'Pain', 'QoL'])
+            DRESS.knn([...trainings, ...testings], ['Age', 'BMI', 'HA1C'], ['Smoking'], ['Etiology'])
         )
     );
-    //
-    DRESS.output('<b>Logistic Regression with ROC Curve</b>');
+    const count = testings.reduce((count, subject) => count + ((subject['Etiology'] === subject['Actual Etiology']) ? 1 : 0), 0);
+    DRESS.output('Accuracy: ' + DRESS.clamp(count / testings.length * 100) + '%');
+
+
+    // Randomly set value to null
+    subjects.map(subject => {
+        ['Age', 'BMI', 'HA1C', 'Smoking', 'Etiology'].map(feature => {
+            if (Math.random() < 0.1) {
+                subject[feature] = null;
+            }
+        });
+    });
+    DRESS.output('<b>Mean Mode Imputation</b>');
     DRESS.output(
-        DRESS.text(            
-            DRESS.logistic(subjects, ['EGD', 'PPI'], ['Disease Duration', 'Diabetes', 'GERD'], DRESS.roc)
+        DRESS.text(
+            DRESS.meanMode(subjects, ['Age', 'BMI', 'HA1C', 'Smoking', 'Etiology'])
+        )
+    );
+    
+    // Randomly set value to null
+    subjects.map(subject => {
+        ['Age', 'BMI', 'HA1C', 'Smoking', 'Etiology'].map(feature => {
+            if (Math.random() < 0.01) {
+                subject[feature] = null;
+            }
+        });
+    });
+    DRESS.output('<b>LOCF Imputation</b>');
+    DRESS.output(
+        DRESS.text(
+            DRESS.locf(subjects, ['Age', 'BMI', 'HA1C', 'Smoking', 'Etiology'])
         )
     );
 }

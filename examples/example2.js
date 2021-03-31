@@ -13,7 +13,7 @@ function processJSON(subjects) {
     DRESS.output('<b>Normalize</b>');
     DRESS.output(
         DRESS.text(
-            DRESS.normalize(subjects, ['Nausea', 'Pain', 'QoL'])
+            DRESS.normalize(subjects, ['Scales.Nausea', 'Scales.Pain', 'Scales.QoL'], ['Nausea', 'Pain', 'QoL'])
         )
     );
 
@@ -21,7 +21,7 @@ function processJSON(subjects) {
     DRESS.output('<b>Standardize</b>');
     DRESS.output(
         DRESS.text(
-            DRESS.standardize(subjects, ['Nausea', 'Pain', 'QoL'])
+            DRESS.standardize(subjects, ['Scales.Nausea', 'Scales.Pain', 'Scales.QoL'], ['Nausea', 'Pain', 'QoL'])
         )
     );
 
@@ -54,4 +54,43 @@ function processJSON(subjects) {
             DRESS.categorize(subjects, 'Alcohol', ['Rare', 'Social', 'Frequent'])
         )
     );
+
+    // Group Data
+    DRESS.output('<b>Group</b>')
+    var groups = DRESS.group(subjects, 'Gender', 'subjects');
+    DRESS.output(
+        DRESS.text(
+            DRESS.frequencies(groups, ['Gender'])
+        )
+    );
+
+    // Label each subject with a unique ID
+    subjects = DRESS.id(subjects);    
+
+    // Pluck Data
+    DRESS.output('<b>Pluck</b>')
+    var scales = DRESS.pluck(subjects, 'Scales', 'subject');
+    var medications = DRESS.pluck(subjects, 'Medications', 'subject');
+    DRESS.output(
+        DRESS.text(
+            DRESS.means(scales, ['Nausea', 'Pain', 'QoL', 'subject.Age', 'subject.BMI'])
+        ) + 
+        DRESS.text(
+            DRESS.proportions(medications, ['PPI', 'Erythromycin', 'Metoclopramide'])
+        )
+    );
+
+    // Merge Data
+    DRESS.output('<b>Merge</b>')
+    var merged = DRESS.merge('subject.id', scales, medications);
+    console.log(merged)
+    DRESS.output(
+        DRESS.text(
+            DRESS.means(merged, ['Nausea', 'Pain', 'QoL'])
+        ) +
+        DRESS.text(
+            DRESS.proportions(merged, ['PPI', 'Erythromycin', 'Metoclopramide'])
+        )
+    )
+    
 }
