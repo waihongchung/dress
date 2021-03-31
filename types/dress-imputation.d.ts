@@ -1,9 +1,9 @@
 declare namespace DRESS {
     /**
-     * @summary Mean mode imputation.
+     * @summary Mean/mode imputation.
      *
-     * @description This method performs simple imputation by replacing missing values of the specified feature with the mean (in case of numerical features) or mode (in case of categorical features) of the rest of the subjects.
-     * Each feature should be a property of the subject that is accessible directly by subject[feature]. Any null value is considered as missing. If the property is an array, then the array of sorted and converted to a string for comparison.
+     * @description This method performs simple imputation by replacing missing values of each specified feature with the mean (in case of numerical features) or mode (in case of categorical features) of said feature from the rest of the subjects.
+     * Each feature should be a property of the subject or is accessible using the dot notation. Any null value is considered as missing. If the property is an array, then the array of sorted and converted to a string for comparison.
      *
      * NOTE: By default, this method is destructive and directly alters the values of the specified feature. To store the imputed results in a different property, the name parameter must be specified.
      *
@@ -28,7 +28,7 @@ declare namespace DRESS {
      * @summary Last observation carried forward imputation.
      *
      * @description This method imputes missing values using the last observation carried forward algorithm. If the missing value is associated with the first observation, then the next non-null observation is carried backforward (NOCB).
-     * Each feature should be a property of the subject that is accessible directly by subject[feature]. Any null value is considered as missing.
+     * Each feature should be a property of the subject or is accessible using the dot notation. Any null value is considered as missing.
      *
      * The subjects array should be sorted properly using other sorting algorithms before imputation is applied.
      *
@@ -52,12 +52,12 @@ declare namespace DRESS {
     /**
      * @summary K-nearest-neighbor imputation.
      *
-     * @description This method performs k-nearest neighbor imputation using a modified algorithm that handles both numerical and categorical features.
-     * Each feature should be a property of the subject that is accessible directly by subject[feature]. If a numerical feature is an array, then the length of the array is used for computation.
+     * @description This method performs k-nearest neighbor imputation using a modified algorithm that accepts both numerical and categorical features as classifiers.
+     * Each feature should be a property of the subject or is accessible using the dot notation. If a numerical feature is an array, then the length of the array is used for computation.
      * If a categorical feature is an array, then the array is sorted and converted to a string for computation.
      *
-     * This algorithm represents an improvement over the popular K-prototype algorithm, which also handles mixed data type. Instead of relying on simple matching (as in K-mode),
-     * the relative distribution of each categorical value is taken into account and the absolute difference in relative distribution between two categorical values contributes to the Manhattan distance used in computation.
+     * This algorithm represents an improvement over the popular K-prototype algorithm, which also handles mixed data type. Instead of relying on simple matching (as in K-mode), however,
+     * the relative distribution of each categorical value is taken into account and the absolute difference in the relative distribution between two categorical values is used to compute the Manhattan distance.
      *
      * NOTE: By default, this method is destructive and directly alters the values of the specified feature. To store the imputed results in a different property, the name parameter must be specified.
      *
@@ -72,14 +72,12 @@ declare namespace DRESS {
      *   feature (the feature imputed),
      *   name (the name of property that store the imputed values),
      *   count (the number of missing values),
-     *   values (the replacement values used),
      *   text
      */
     let knn: (subjects: object[], numericals: string[], categoricals: string[], features: string[], names?: string[], k?: number, normalize?: boolean) => {
         feature: string;
         name: string;
         count: number;
-        values: any[];
         text: string;
     }[];
 }

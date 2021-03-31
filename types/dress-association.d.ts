@@ -2,13 +2,10 @@ declare namespace DRESS {
     /**
      * @summary Calculate the odds of an event in the exposed group relative to that in the unexposed group.
      *
-     * @description This method loops through each exposure and calculates the associated odds ratios for an event. An event is defined as the occurrence of all specified outcomes.
-     * For instance, if the specified outcomes were ['outpatient', 'uti'], then only subjects that had an UTI AND were treated as outpatient would be considered to have a positiven event.
-     * Each outcome and exposure should be a property of the subject that is accessible directly by subject[outcome] or subject[exposure]. If the property is an array, then a positive outcome/exposure
-     * is defined as a non-empty array. If the property is not an array, then a positive outcome/exposure is defined as any non-null value.
-     *
-     * Z Test for Odds Ratio ({@link https://www2.ccrb.cuhk.edu.hk/stat/confidence%20interval/CI%20for%20ratio.htm}) is used to calculate the Z score and p value. Confidence interval can be adjusted by
-     * changing the value of DRESS.SIGNIFICANCE.
+     * @description This method calculates the odds ratios for an event associated with an exposure amongst the subjects. An event is defined as the occurrence of all specified outcomes.
+     * For instance, if the specified outcomes were ['outpatient', 'uti'], then only subjects that had an UTI AND were treated as outpatient would be considered to have a positive event.
+     * Each outcome and exposure should be a property of the subject or is accessible using the dot notation. If the property is an array, then a positive outcome/exposure
+     * is defined as a non-empty array. If the property is not an array, then it would be converted to a numeric value and a positive outcome/exposure is defined as any non-zero value.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} outcomes - An array of outcomes that defines an event.
@@ -52,13 +49,10 @@ declare namespace DRESS {
     /**
      * @summary Calculate the risk of an event in the exposed group relative to that in the unexposed group.
      *
-     * @description This method loops through each exposure and calculates the associated risk ratios for an event. An event is defined as the occurrence of all specified outcomes.
-     * For instance, if the specified outcomes were ['outpatient', 'uti'], then only subjects that had an UTI AND were treated as outpatient would be considered to have a positiven event.
-     * Each outcome and exposure should be a property of the subject that is accessible directly by subject[outcome] or subject[exposure]. If the property is an array, then a positive outcome/exposure
-     * is defined as a non-empty array. If the property is not an array, then a positive outcome/exposure is defined as any non-null value.
-     *
-     * Z Test for Risk Ratio ({@link https://www2.ccrb.cuhk.edu.hk/stat/confidence%20interval/CI%20for%20relative%20risk.htm}) is used to calculate the Z score and p value. Confidence interval can be adjusted by
-     * changing the value of DRESS.SIGNIFICANCE.
+     * @description This method calculates the risk ratios for an event associated with an exposure amongst the subjects. An event is defined as the occurrence of all specified outcomes.
+     * For instance, if the specified outcomes were ['outpatient', 'uti'], then only subjects that had an UTI AND were treated as outpatient would be considered to have a positive event.
+     * Each outcome and exposure should be a property of the subject or is accessible using the dot notation. If the property is an array, then a positive outcome/exposure
+     * is defined as a non-empty array. If the property is not an array, then it would be converted to a numeric value and a positive outcome/exposure is defined as any non-zero value.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} outcomes - An array of outcomes that defines an event.
@@ -102,10 +96,10 @@ declare namespace DRESS {
     /**
      * @summary Computes a list of effect measures based on outcomes and exposures.
      *
-     * @description This method loops through each exposure and computes a list of effect measures, including attributable risk, attributable fraction, absolute risk reduction, and relative risk reduction.
+     * @description This method computes a list of effect measures, including attributable risk, attributable fraction, absolute risk reduction, and relative risk reduction, for an event associated with an exposure amongst the subjects.
      * An event is defined as the occurrence of all specified outcomes. For instance, if the specified outcomes were ['outpatient', 'uti'], then only subjects that had an UTI AND were treated as outpatient would be considered to have a positiven event.
-     * Each outcome and exposure should be a property of the subject that is accessible directly by subject[outcome] or subject[exposure]. If the property is an array, then a positive outcome/exposure
-     * is defined as a non-empty array. If the property is not an array, then a positive outcome/exposure is defined as any non-null value.
+     * Each outcome and exposure should be a property of the subject or is accessible using the dot notation. If the property is an array, then a positive outcome/exposure
+     * is defined as a non-empty array. If the property is not an array, then it would be converted to a numeric value and a positive outcome/exposure is defined as any non-zero value.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} outcomes - An array of outcomes that defines an event.

@@ -10,7 +10,7 @@ declare namespace DRESS {
     /**
     * @ignore
     */
-    let clamp: (n: number) => string;
+    let clamp: (n: number | string) => string;
     /**
      * @ignore
      */
@@ -51,4 +51,12 @@ declare namespace DRESS {
      * @ignore
      */
     let atdist: (p: number, n1: number) => number;
+    /**
+     * @ignore
+     */
+    let get: (object: any, path: string) => any;
+    /**
+     * @ignore
+     */
+    let set: (object: any, path: string, value: any) => void;
 }

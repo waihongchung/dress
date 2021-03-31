@@ -1,11 +1,11 @@
 declare namespace DRESS {
     /**
-     * @summary Perform multiple logistic regressions.
+     * @summary Multiple logistic regressions.
      *
      * @description This method builds a statistical model to predict the occurrence of an event based on a list of features.
      * An event is defined as the occurrence of all specified outcomes. For instance, if the specified outcomes were ['outpatient', 'uti'], then only subjects that had an UTI AND were treated as outpatient would be considered to have a positiven event.
-     * Each outcome and feature should be a property of the subject that is accessible directly by subject[outcome] or subject[feature]. If the property is an array, then a positive outcome
-     * is defined as a non-empty array, while the length of the array is used as the value of the feature. If the property is not an array, then a positive outcome is defined as any non-null value, while the numeric value of the feature is used in computation.
+     * Each outcome and feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then a positive outcome is defined as a non-empty array, while the length of the array is used as the value of the feature.
+     * If the property is not an array, then it would be converted to a numeric value and a positive outcome is defined as any non-zero value.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} outcomes - An array of outcomes that defines an event.
@@ -48,11 +48,11 @@ declare namespace DRESS {
         text: string;
     };
     /**
-     * @summary Perform multiple linear regressions.
+     * @summary Multiple linear regressions.
      *
      * @description This method builds a statistical model to predict the outcome values based on a list of features.
-     * Each outcome and feature should be a property of the subject that is accessible directly by subject[outcome] or subject[feature].
-     * If the property is an array, then the length of the array is used as the value of the outcome/feature. If the property is not an array, then the numeric value of the outcome/feature is used in computation.
+     * Each outcome and feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then the length of the array is used as the value of the outcome/feature.
+     * If the property is not an array, then it would be converted to a numeric value.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string} outcome - The outcome to be analyzed.
@@ -76,13 +76,11 @@ declare namespace DRESS {
      */
     let linear: (subjects: object | object[], outcome: string, features: string[], origin?: boolean) => object;
     /**
-     * @summary Perform simple polynomial regressions.
+     * @summary Simple polynomial regression.
      *
      * @description This method builds a statistical model to predict the outcome values based on a feature using a polynomial equation.
-     * Each outcome and feature should be a property of the subject that is accessible directly by subject[outcome] or subject[feature].
-     * If the property is an array, then the length of the array is used as the value of the outcome/feature. If the property is not an array, then the numeric value of the outcome/feature is used in computation.
-     *
-     * Internally, this method uses the linear regression method to perform the actual regression.
+     * Each outcome and feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then the length of the array is used as the value of the outcome/feature.
+     * If the property is not an array, then it would be converted to a numeric value.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string} outcome - The outcome to be analyzed.

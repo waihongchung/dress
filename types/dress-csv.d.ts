@@ -32,8 +32,7 @@ declare namespace DRESS {
      * @param {object[]} subjects -  The subjects to be processed.
      * @param {string[]} features - The features to be processed.
      * @param {boolean} [parseNumber=true] - Automatically convert numeric values into numbers.
-     * @param {boolean} [emptyArray=true] - Assign an empty array to a null value. If set to false, then a null value is left as null.
      * @param {string} [separator=','] - The separator character. Default to ','.
      */
-    let parseArray: (subjects: object[], features: string[], parseNumber?: boolean, emptyArray?: boolean, seperator?: string) => void;
+    let parseArray: (subjects: object[], features: string[], parseNumber?: boolean, seperator?: string) => void;
 }

@@ -1,31 +1,67 @@
 declare namespace DRESS {
     /**
-     * @summary Calculate the proportion of subjects that a positive outcome, and optionally compare the result to that of a second group of subjects.
+     * @summary Locate the medians of the specified features, and optionally compare the result to that of a second group of subjects.
      *
-     * @description This method loops through the outcomes array and counts the number of subject that has a positive outcome.
-     * Each outcome should be a property of the subject that is accessible directly by subject[outcome]. If the property is an array, then a positive outcome
-     * is defined as a non-empty array. If the property is not an array, then a positive outcome is defined as any non-null value.
+     * @description This method computes the medians as well as the interquartile ranges of the specified features.
+     * Each feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then the length of the array is considered.
+     * If the property is not an array, then the numeric value of the property is considered.
      *
-     * If a comparison group, subjects2, is provided, then this method also calculates the Z score, using the Two Proportions Z Test
-     * ({@link https://www.socscistatistics.com/tests/ztest/}) and the corresponding P value for each outcome.
+     * Z score is calculated using the Mann–Whitney U test.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
-     * @param {string[]} outcomes - An array of outcomes that defines an event.
-     * @param {object[]} [subjects2=null] - Optional, a comparison group of subjects.
-     * @returns {object[]} An array of result objects, one for each outcome. For each outcome, the following results are returned:
-     *   outcome (the outcome being considered),
-     *   count (the number of subject with a positive outcome),
-     *   proportion (the proportion of subject with a positive outcome),
-     *   ci (the confidence interval of the proportion),
-     *   count2 (the number of subject with a positive outcome within the comparison group, only applicable if subjects2 is specified),
-     *   proportion2 (the proportion of subject with a positive outcome within the comparison group, only applicable if subjects2 is specified),
-     *   ci2 (the confidence interval of the proportion in the comparison group, only applicable if subjects2 is specified),
+     * @param {string[]} features - An array of features to be analyzed.
+     * @param {object[]} [subjects2=null] - Optional, a second group of subjects.
+     * @param {boolean} [skipNull=true] - Optional, when set to true, null values are ignored. Otherwise, null is counted as zero.
+     * @returns {object[]} An array of result objects, one for each feature. For each feature, the following results are returned:
+     *   feature (the feature being analyzed),
+     *   count (the number of subjects with non-null values),
+     *   median (the median value),
+     *   iqr (the interquartile range, which equals to the value of the 75th percentile minus that of the 25th percentile),
+     *   count2 (the number of subjects with non-null values for the second group of subjects, only applicable if subjects2 is specified),
+     *   median2 (the median values for the second group of subjects, only applicable if subjects2 is specified),
+     *   iqr2 (the interquartile range for the second group of subjects, only applicable if subjects2 is specified),
      *   z (z score, only applicable if subjects2 is specified),
      *   p (p value, only applicable if subjects2 is specified),
      *   text.
      */
-    let proportions: (subjects: object[], outcomes: string[], subjects2?: object[]) => {
-        outcome: string;
+    let medians: (subjects: object[], features: string[], subjects2?: object[], skipNull?: boolean) => {
+        feature: string;
+        count: number;
+        median: number;
+        iqr: number;
+        count2: number;
+        median2: number;
+        iqr2: number;
+        z: number;
+        p: number;
+        text: string;
+    }[];
+    /**
+     * @summary Calculate the proportion of subjects that a positive feature, and optionally compare the result to that of a second group of subjects.
+     *
+     * @description This method counts the number of subjects that has a positive feature.
+     * Each feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then a positive feature is defined as a non-empty array.
+     * If the property is not an array, then it would be converted to a numeric value and a positive feature is defined as any non-zero value.
+     *
+     * Z score is calcuated using the 2 proportions Z test.
+     *
+     * @param {object[]} subjects - The subjects to be analyzed.
+     * @param {string[]} features - An array of features to be analyzed.
+     * @param {object[]} [subjects2=null] - Optional, a second group of subjects.
+     * @returns {object[]} An array of result objects, one for each feature. For each feature, the following results are returned:
+     *   feature (the feature being analyzed),
+     *   count (the number of subject with a positive feature),
+     *   proportion (the proportion of subject with a positive feature),
+     *   ci (the confidence interval of the proportion),
+     *   count2 (the number of subject with a positive feature for the second group of subjects, only applicable if subjects2 is specified),
+     *   proportion2 (the proportion of subject with a positive feature for the second group of subjects, only applicable if subjects2 is specified),
+     *   ci2 (the confidence interval of the proportion for the second group of subjects, only applicable if subjects2 is specified),
+     *   z (z score, only applicable if subjects2 is specified),
+     *   p (p value, only applicable if subjects2 is specified),
+     *   text.
+     */
+    let proportions: (subjects: object[], features: string[], subjects2?: object[]) => {
+        feature: string;
         count: number;
         proportion: number;
         ci: number[];
@@ -37,37 +73,35 @@ declare namespace DRESS {
         text: string;
     }[];
     /**
-     * @summary Calculate the frequency of occurrence for each outcome value, and optionally compare the result to that of a second groups of subjects.
+     * @summary Calculate the frequency of occurrence for each feature value, and optionally compare the result to that of a second groups of subjects.
      *
-     * @description This method loops through each outcome, tabulates all possible outcome values, and counts the frequency of occurrence of
-     * each outcome value by looping through each subject.
-     * Each outcome should be a property of the subject that is accessible directly by subject[outcome]. If the property is an array, then each value within the array
-     * is converted to a string. If the property is not an array, then the entire value is converted into a string. Outcome values are compared as case-insensitive strings.
+     * @description This method tabulates all possible values for each feature, and counts the frequency of occurrence of each feature value.
+     * Each feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then each value within the array
+     * is converted to a string. If the property is not an array, then the entire value is converted into a string.
      *
-     * If a comparison group, subjects2, is provided, then this method also calculates the Z score, using the Two Proportions Z Test
-     * ({@link https://www.socscistatistics.com/tests/ztest/}) and the corresponding P value for each outcome.
+     * Z score is calcuated using the 2 proportions Z test.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
-     * @param {string[]} outcomes - An array of outcomes that defines an event.
-     * @param {object[]} [subjects2=null] - Optional, a comparison group of subjects.
-     * @param {number} [limit=25] - Optional, maximum number of outcome values to be analyzed.
-     * @returns {object[]} An array of result objects, one for each outcome. For each outcome, the following results are returned:
-     *   outcome (the outcome being considered),
-     *   values (an array of possible outcome values),
+     * @param {string[]} features - An array of features to be analyzed.
+     * @param {object[]} [subjects2=null] - Optional, a second group of subjects.
+     * @param {number} [limit=25] - Optional, maximum number of feature values to be analyzed.
+     * @returns {object[]} An array of result objects, one for each feature. For each feature, the following results are returned:
+     *   feature (the feature being analyzed),
+     *   values (an array of possible feature values),
      *   text.
-     *   For each outcome value, the following results are returned:
-     *     count (the number of subject with said outcome value),
-     *     proportion (the proportion of subject with said outcome value),
+     *   For each feature value, the following results are returned:
+     *     count (the number of subject with said feature value),
+     *     proportion (the proportion of subject with said feature value),
      *     ci (the confidence interval of the proportion),
-     *     count2 (the number of subject with said outcome value within the comparison group, only applicable if subjects2 is specified),
-     *     proportion2 (the proportion of subject with said outcome value within the comparison group, only applicable if subjects2 is specified),
-     *     ci2 (the confidence interval of the proportion in the comparison group, only applicable if subjects2 is specified),
+     *     count2 (the number of subject with said feature value for the second group of subjects, only applicable if subjects2 is specified),
+     *     proportion2 (the proportion of subject with said feature value for the second group of subjects, only applicable if subjects2 is specified),
+     *     ci2 (the confidence interval of the proportion for the second group of subjects, only applicable if subjects2 is specified),
      *     z (z score, only applicable if subjects2 is specified),
      *     p (p value, only applicable if subjects2 is specified),
      *     text.
      */
-    let frequencies: (subjects: object[], outcomes: string[], subjects2?: object[], limit?: number) => {
-        outcome: string;
+    let frequencies: (subjects: object[], features: string[], subjects2?: object[], limit?: number) => {
+        feature: string;
         values: {
             value: string;
             count: number;
@@ -83,35 +117,32 @@ declare namespace DRESS {
         text: string;
     }[];
     /**
-     * @summary Calculate the statistical mean for each outcome, and optionally compare the result to that of a second group of subjects.
+     * @summary Calculate the arithmetic mean for each feature, and optionally compare the result to that of a second group of subjects.
      *
-     * @description This method loops through each outcome and calculates its statistical mean.
-     * Each outcome should be a property of the subject that is accessible directly by subject[outcome]. If the property is an array, then the length of the array is used as a value.
-     * If the property is not an array, then the value is converted into a number.
-     *
-     * If a comparison group of subjects, subjects2, is provided, then this method also calculates the Z score, using the Z Test for Two Means
-     * ({@link https://mathcracker.com/z-test-for-two-means}) and the corresponding P value for each outcome.
+     * @description This method computes the arithmetic means as well as the standard deviations of the specified features.
+     * Each feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then the length of the array is considered.
+     * If the property is not an array, then the numeric value of the property is considered.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
-     * @param {string[]} outcomes - An array of outcomes that defines an event.
-     * @param {object[]} [subjects2=null] - Optional, a comparison group of subjects.
-     * @param {boolean} [skipNull=true] - Optional, when set to true, null values are ignored.
-     * @returns {object[]} An array of result objects, one for each outcome. For each outcome, the following results are returned:
-     *   outcome (the outcome being considered),
-     *   count (the number of subject with a non-null outcome),
-     *   mean (the arithmetic mean of the outcome values),
-     *   sd (the standard deviation of the outcome values),
+     * @param {string[]} features - An array of features to be analyzed.
+     * @param {object[]} [subjects2=null] - Optional, a second group of subjects.
+     * @param {boolean} [skipNull=true] - Optional, when set to true, null values are ignored. Otherwise, null is counted as zero.
+     * @returns {object[]} An array of result objects, one for each feature. For each feature, the following results are returned:
+     *   feature (the feature being analyzed),
+     *   count (the number of subjects with non-null values),
+     *   mean (the arithmetic mean of the feature),
+     *   sd (the standard deviation of the feature),
      *   ci (the confidence interval of the mean),
-     *   count2 (the number of subject with a non-null outcome within the comparison group of subjects, only applicable if subjects2 is specified),
-     *   mean2 (the arithmetic mean of the outcome values within the comparison group of subjects, only applicable if subjects2 is specified),
-     *   sd2 (the standard deviation of the outcome values within the comparison group of subjects, only applicable if subjects2 is specified),
-     *   ci2 (the confidence interval of the mean within the comparison group of subjects, only applicable if subjects2 is specified),
+     *   count2 (the number of subjects with a non-null values for the second group of subjects, only applicable if subjects2 is specified),
+     *   mean2 (the arithmetic mean of the feature for the second group of subjects, only applicable if subjects2 is specified),
+     *   sd2 (the standard deviation of the feature for the second group of subjects, only applicable if subjects2 is specified),
+     *   ci2 (the confidence interval of the mean for the second group of subjects, only applicable if subjects2 is specified),
      *   z (z score, only applicable if subjects2 is specified),
      *   p (p value, only applicable if subjects2 is specified),
      *   text.
      */
-    let means: (subjects: object[], outcomes: string[], subjects2?: object[], skipNull?: boolean) => {
-        outcome: string;
+    let means: (subjects: object[], features: string[], subjects2?: object[], skipNull?: boolean) => {
+        feature: string;
         count: number;
         mean: number;
         sd: number;
