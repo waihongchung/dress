@@ -22,7 +22,7 @@ var DRESS;
                     let object = {};
                     tokenize(line, separator).map((token, index) => {
                         const numeric = +token;
-                        object[header[index]] = (parseNumber && (String(numeric) === token)) ? numeric : (token ? token : null);
+                        DRESS.set(object, header[index], (parseNumber && (String(numeric) === token)) ? numeric : (token ? token : null));
                     });
                     objects.push(object);
                 }
@@ -48,15 +48,27 @@ var DRESS;
             value = String(value).replace(/"/g, '""');
             return ((value.indexOf(separator) > -1) || (value.indexOf('"') > -1)) ? '"' + value + '"' : value;
         };
+        let parse = (obj) => {
+            return Object.keys(obj).reduce((keys, key) => {
+                if ((typeof obj[key] === 'object') && !Array.isArray(obj[key])) {
+                    return keys.concat(parse(obj[key]).map(subkey => key + '.' + subkey));
+                }
+                keys.push(key);
+                return keys;
+            }, []);
+        };
         //        
         if (!subjects.length) {
             return '';
         }
         if (features === null) {
-            features = Object.keys(subjects[0]);
+            features = parse(subjects[0]);
         }
         return features.map(header => quote(header)).join(separator) + '\n'
-            + subjects.map(subject => features.map(header => quote(Array.isArray(subject[header]) ? subject[header].map(v => quote(v)).join(separator) : subject[header])).join(separator)).join('\n');
+            + subjects.map(subject => features.map(header => {
+                const value = DRESS.get(subject, header);
+                return quote(Array.isArray(value) ? value.map(v => quote(v)).join(separator) : value);
+            }).join(separator)).join('\n');
     };
     /**
      * @summary Convert the specified features of the subjects into an array of values.
@@ -67,23 +79,16 @@ var DRESS;
      * @param {object[]} subjects -  The subjects to be processed.
      * @param {string[]} features - The features to be processed.
      * @param {boolean} [parseNumber=true] - Automatically convert numeric values into numbers.
-     * @param {boolean} [emptyArray=true] - Assign an empty array to a null value. If set to false, then a null value is left as null.
      * @param {string} [separator=','] - The separator character. Default to ','.
      */
-    DRESS.parseArray = (subjects, features, parseNumber = true, emptyArray = true, seperator = ',') => {
+    DRESS.parseArray = (subjects, features, parseNumber = true, seperator = ',') => {
         subjects.map(subject => {
             features.map(feature => {
-                if (subject[feature] === null) {
-                    if (emptyArray) {
-                        subject[feature] = [];
-                    }
-                }
-                else {
-                    subject[feature] = tokenize(String(subject[feature]), seperator).map(token => {
-                        const numeric = +token;
-                        return (parseNumber && (String(numeric) === token)) ? numeric : (token ? token : null);
-                    });
-                }
+                const value = DRESS.get(subject, feature);
+                DRESS.set(subject, feature, (value === null) ? [] : tokenize(String(value), seperator).map(token => {
+                    const numeric = +token;
+                    return (parseNumber && (String(numeric) === token)) ? numeric : (token ? token : null);
+                }));
             });
         });
     };

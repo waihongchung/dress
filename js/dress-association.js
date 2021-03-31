@@ -3,13 +3,10 @@ var DRESS;
     /**
      * @summary Calculate the odds of an event in the exposed group relative to that in the unexposed group.
      *
-     * @description This method loops through each exposure and calculates the associated odds ratios for an event. An event is defined as the occurrence of all specified outcomes.
-     * For instance, if the specified outcomes were ['outpatient', 'uti'], then only subjects that had an UTI AND were treated as outpatient would be considered to have a positiven event.
-     * Each outcome and exposure should be a property of the subject that is accessible directly by subject[outcome] or subject[exposure]. If the property is an array, then a positive outcome/exposure
-     * is defined as a non-empty array. If the property is not an array, then a positive outcome/exposure is defined as any non-null value.
-     *
-     * Z Test for Odds Ratio ({@link https://www2.ccrb.cuhk.edu.hk/stat/confidence%20interval/CI%20for%20ratio.htm}) is used to calculate the Z score and p value. Confidence interval can be adjusted by
-     * changing the value of DRESS.SIGNIFICANCE.
+     * @description This method calculates the odds ratios for an event associated with an exposure amongst the subjects. An event is defined as the occurrence of all specified outcomes.
+     * For instance, if the specified outcomes were ['outpatient', 'uti'], then only subjects that had an UTI AND were treated as outpatient would be considered to have a positive event.
+     * Each outcome and exposure should be a property of the subject or is accessible using the dot notation. If the property is an array, then a positive outcome/exposure
+     * is defined as a non-empty array. If the property is not an array, then it would be converted to a numeric value and a positive outcome/exposure is defined as any non-zero value.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} outcomes - An array of outcomes that defines an event.
@@ -38,14 +35,23 @@ var DRESS;
         //
         const events = [];
         const nonevents = [];
-        subjects.map(subject => (outcomes.every(outcome => Array.isArray(subject[outcome]) ? subject[outcome].length : +subject[outcome]) ? events : nonevents).push(subject));
+        subjects.map(subject => (outcomes.every(outcome => {
+            const value = DRESS.get(subject, outcome);
+            return Array.isArray(value) ? value.length : +value;
+        }) ? events : nonevents).push(subject));
         return {
             outcomes: outcomes,
             event: events.length,
             nonevent: nonevents.length,
             exposures: exposures.map(exposure => {
-                const exposedEvent = events.filter(subject => Array.isArray(subject[exposure]) ? subject[exposure].length : +subject[exposure]).length;
-                const exposedNonevent = nonevents.filter(subject => Array.isArray(subject[exposure]) ? subject[exposure].length : +subject[exposure]).length;
+                const exposedEvent = events.filter(subject => {
+                    const value = DRESS.get(subject, exposure);
+                    return Array.isArray(value) ? value.length : +value;
+                }).length;
+                const exposedNonevent = nonevents.filter(subject => {
+                    const value = DRESS.get(subject, exposure);
+                    return Array.isArray(value) ? value.length : +value;
+                }).length;
                 const unexposedEvent = events.length - exposedEvent;
                 const unexposedNonevent = nonevents.length - exposedNonevent;
                 //
@@ -75,13 +81,10 @@ var DRESS;
     /**
      * @summary Calculate the risk of an event in the exposed group relative to that in the unexposed group.
      *
-     * @description This method loops through each exposure and calculates the associated risk ratios for an event. An event is defined as the occurrence of all specified outcomes.
-     * For instance, if the specified outcomes were ['outpatient', 'uti'], then only subjects that had an UTI AND were treated as outpatient would be considered to have a positiven event.
-     * Each outcome and exposure should be a property of the subject that is accessible directly by subject[outcome] or subject[exposure]. If the property is an array, then a positive outcome/exposure
-     * is defined as a non-empty array. If the property is not an array, then a positive outcome/exposure is defined as any non-null value.
-     *
-     * Z Test for Risk Ratio ({@link https://www2.ccrb.cuhk.edu.hk/stat/confidence%20interval/CI%20for%20relative%20risk.htm}) is used to calculate the Z score and p value. Confidence interval can be adjusted by
-     * changing the value of DRESS.SIGNIFICANCE.
+     * @description This method calculates the risk ratios for an event associated with an exposure amongst the subjects. An event is defined as the occurrence of all specified outcomes.
+     * For instance, if the specified outcomes were ['outpatient', 'uti'], then only subjects that had an UTI AND were treated as outpatient would be considered to have a positive event.
+     * Each outcome and exposure should be a property of the subject or is accessible using the dot notation. If the property is an array, then a positive outcome/exposure
+     * is defined as a non-empty array. If the property is not an array, then it would be converted to a numeric value and a positive outcome/exposure is defined as any non-zero value.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} outcomes - An array of outcomes that defines an event.
@@ -108,15 +111,24 @@ var DRESS;
         const pad = exposures.reduce((max, exposure) => Math.max(max, exposure.length), 0);
         const zCI = DRESS.anorm(DRESS.SIGNIFICANCE);
         //
-        const events = subjects.filter(subject => outcomes.every(outcome => Array.isArray(subject[outcome]) ? subject[outcome].length : +subject[outcome]));
+        const events = subjects.filter(subject => outcomes.every(outcome => {
+            const value = DRESS.get(subject, outcome);
+            return Array.isArray(value) ? value.length : +value;
+        }));
         return {
             outcomes: outcomes,
             event: events.length,
             nonevent: subjects.length - events.length,
             exposures: exposures.map(exposure => {
-                const exposed = subjects.filter(subject => Array.isArray(subject[exposure]) ? subject[exposure].length : +subject[exposure]).length;
+                const exposed = subjects.filter(subject => {
+                    const value = DRESS.get(subject, exposure);
+                    return Array.isArray(value) ? value.length : +value;
+                }).length;
                 const unexposed = subjects.length - exposed;
-                const exposedEvent = events.filter(subject => Array.isArray(subject[exposure]) ? subject[exposure].length : +subject[exposure]).length;
+                const exposedEvent = events.filter(subject => {
+                    const value = DRESS.get(subject, exposure);
+                    return Array.isArray(value) ? value.length : +value;
+                }).length;
                 const unexposedEvent = events.length - exposedEvent;
                 //
                 const riskRatio = (exposedEvent * unexposed) / (unexposedEvent * exposed);
@@ -145,10 +157,10 @@ var DRESS;
     /**
      * @summary Computes a list of effect measures based on outcomes and exposures.
      *
-     * @description This method loops through each exposure and computes a list of effect measures, including attributable risk, attributable fraction, absolute risk reduction, and relative risk reduction.
+     * @description This method computes a list of effect measures, including attributable risk, attributable fraction, absolute risk reduction, and relative risk reduction, for an event associated with an exposure amongst the subjects.
      * An event is defined as the occurrence of all specified outcomes. For instance, if the specified outcomes were ['outpatient', 'uti'], then only subjects that had an UTI AND were treated as outpatient would be considered to have a positiven event.
-     * Each outcome and exposure should be a property of the subject that is accessible directly by subject[outcome] or subject[exposure]. If the property is an array, then a positive outcome/exposure
-     * is defined as a non-empty array. If the property is not an array, then a positive outcome/exposure is defined as any non-null value.
+     * Each outcome and exposure should be a property of the subject or is accessible using the dot notation. If the property is an array, then a positive outcome/exposure
+     * is defined as a non-empty array. If the property is not an array, then it would be converted to a numeric value and a positive outcome/exposure is defined as any non-zero value.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} outcomes - An array of outcomes that defines an event.
@@ -175,15 +187,24 @@ var DRESS;
         const pad = exposures.reduce((max, exposure) => Math.max(max, exposure.length), 0);
         const zCI = DRESS.anorm(DRESS.SIGNIFICANCE);
         //
-        const events = subjects.filter(subject => outcomes.every(outcome => Array.isArray(subject[outcome]) ? subject[outcome].length : +subject[outcome]));
+        const events = subjects.filter(subject => outcomes.every(outcome => {
+            const value = DRESS.get(subject, outcome);
+            return Array.isArray(value) ? value.length : +value;
+        }));
         return {
             outcomes: outcomes,
             event: events.length,
             nonevent: subjects.length - events.length,
             exposures: exposures.map(exposure => {
-                const exposed = subjects.filter(subject => Array.isArray(subject[exposure]) ? subject[exposure].length : +subject[exposure]).length;
+                const exposed = subjects.filter(subject => {
+                    const value = DRESS.get(subject, exposure);
+                    return Array.isArray(value) ? value.length : +value;
+                }).length;
                 const unexposed = subjects.length - exposed;
-                const exposedEvent = events.filter(subject => Array.isArray(subject[exposure]) ? subject[exposure].length : +subject[exposure]).length;
+                const exposedEvent = events.filter(subject => {
+                    const value = DRESS.get(subject, exposure);
+                    return Array.isArray(value) ? value.length : +value;
+                }).length;
                 const unexposedEvent = events.length - exposedEvent;
                 //                
                 const AR = (exposedEvent / exposed) - (unexposedEvent / unexposed);
@@ -218,7 +239,7 @@ var DRESS;
                             ci: ci_AR,
                             z: z_AR,
                             p: p_AR,
-                            text: 'AR : ' + DRESS.clamp(AR) + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci_AR.map(value => DRESS.clamp(value)).join(' - ') + ')'
+                            text: 'AR : ' + DRESS.clamp(AR) + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci_AR.map(v => DRESS.clamp(v)).join(' - ') + ')'
                                 + '	z: ' + DRESS.signed(DRESS.clamp(z_AR)) + '	p: ' + DRESS.clamp(p_AR)
                         },
                         {
@@ -227,7 +248,7 @@ var DRESS;
                             ci: ci_AF,
                             z: z_AF,
                             p: p_AF,
-                            text: 'AF : ' + DRESS.clamp(AF) + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci_AF.map(value => DRESS.clamp(value)).join(' - ') + ')'
+                            text: 'AF : ' + DRESS.clamp(AF) + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci_AF.map(v => DRESS.clamp(v)).join(' - ') + ')'
                                 + '	z: ' + DRESS.signed(DRESS.clamp(z_AF)) + '	p: ' + DRESS.clamp(p_AF)
                         },
                         {
@@ -236,7 +257,7 @@ var DRESS;
                             ci: ci_ARR,
                             z: z_ARR,
                             p: p_ARR,
-                            text: 'ARR: ' + DRESS.clamp(ARR) + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci_ARR.map(value => DRESS.clamp(value)).join(' - ') + ')'
+                            text: 'ARR: ' + DRESS.clamp(ARR) + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci_ARR.map(v => DRESS.clamp(v)).join(' - ') + ')'
                                 + '	z: ' + DRESS.signed(DRESS.clamp(z_ARR)) + '	p: ' + DRESS.clamp(p_ARR)
                         },
                         {
@@ -245,7 +266,7 @@ var DRESS;
                             ci: ci_RRR,
                             z: z_RRR,
                             p: p_RRR,
-                            text: 'RRR: ' + DRESS.clamp(1 - RR) + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci_RRR.map(value => DRESS.clamp(value)).join(' - ') + ')'
+                            text: 'RRR: ' + DRESS.clamp(1 - RR) + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci_RRR.map(v => DRESS.clamp(v)).join(' - ') + ')'
                                 + '	z: ' + DRESS.signed(DRESS.clamp(z_RRR)) + '	p: ' + DRESS.clamp(p_RRR)
                         }
                     ],

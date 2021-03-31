@@ -12,7 +12,7 @@ var DRESS;
     * @ignore
     */
     DRESS.clamp = (n) => {
-        return n.toFixed(DRESS.PRECISION);
+        return (+n).toFixed(DRESS.PRECISION);
     };
     /**
      * @ignore
@@ -184,5 +184,19 @@ var DRESS;
             DRESS.tdist(z, n1) > p ? v -= dv : v += dv;
         }
         return z;
+    };
+    /**
+     * @ignore
+     */
+    DRESS.get = (object, path) => {
+        return path.split('.').reduce((object, segment) => ((object === null) || (typeof object[segment] === 'undefined')) ? null : object[segment], object);
+    };
+    /**
+     * @ignore
+     */
+    DRESS.set = (object, path, value) => {
+        const segments = path.split('.');
+        const segment = segments.pop();
+        segments.reduce((object, segment) => (typeof object[segment] === 'undefined') ? (object[segment] = {}) : object[segment], object)[segment] = value;
     };
 })(DRESS || (DRESS = {}));

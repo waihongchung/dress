@@ -4,15 +4,15 @@ var DRESS;
      * @summary Multilevel mixed data type sorting.
      *
      * @description This method performs multilevel mixed data type sorting on an array of subjects based on the specified features.
-     * Each feature should be a property of the subject that is accessible directly by subject[feature].
+     * Each feature should be a property of the subject or is accessible using the dot notation.
      *
-     * Sorting is performed in the order specified by the features array. Null values are considered smaller than non-null values.
+     * Sorting precedence is defined by the features array. Null values are considered smaller than non-null values.
      * Numerical values are considered smaller than non-numerical values. Non-array values are considered smaller than array values.
      *
      * Two array values are sorted based on the values of individual elements within the arrays.
      * If the recursevie flag is set to true, then the elements within an array is sorted first, before the array itself is sorted.
      *
-     * By default, sorting is performed in ascending order, but it can be changed to a descending order by setting the reverses flags to true on individual levels.
+     * By default, sorting is performed in ascending order, but it can be changed to a descending order by setting the reverses flags to true on individual feature.
      *
      * @param {object[]} subjects - The subjects to be sorted.
      * @param {string[]} features - One or more features (or levels) on which the sorting algorithm is applied.
@@ -72,7 +72,7 @@ var DRESS;
             if (reverses[index]) {
                 subjects.reverse();
             }
-            subjects.sort((subA, subB) => compare(subA[feature], subB[feature]));
+            subjects.sort((subjectA, subjectB) => compare(DRESS.get(subjectA, feature), DRESS.get(subjectB, feature)));
             if (reverses[index]) {
                 subjects.reverse();
             }
@@ -80,7 +80,7 @@ var DRESS;
             return {
                 feature: feature,
                 reverse: reverses[index],
-                text: DRESS.padEnd(feature, pad) + ': ' + (reverses[index] ? 'dsc' : 'asc')
+                text: DRESS.padEnd(feature, pad) + ': ' + (reverses[index] ? 'descending' : 'ascending')
             };
         }).reverse();
     };

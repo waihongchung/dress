@@ -1,12 +1,13 @@
 var DRESS;
 (function (DRESS) {
     /**
-     * @summary Generate a nonparametic receiver operating characteristic curve based on one or more binary classifiers.
+     * @summary Generate a nonparametic receiver operating characteristic curve based on one or more numerical classifiers.
      *
-     * @description This method builds a nonparametric receiver operating characteristic curve for each continous or categorical classifiers in relation to the outcomes.
+     * @description This method builds a nonparametric receiver operating characteristic curve for each numerical classifiers in relation to the outcomes.
      * An event is defined as the occurrence of all specified outcomes. For instance, if the specified outcomes were ['outpatient', 'uti'], then only subjects that had an UTI AND were treated as outpatient would be considered to have a positiven event.
-     * Each outcome and classifier should be a property of the subject that is accessible directly by subject[outcome] or subject[classifier]. If the property is an array, then a positive outcome
-     * is defined as a non-empty array, while the length of the array is considered as the value of the classifier. If the property is not an array, then a positive outcome is defined as any non-null value, while the numeric value of the classifier is used in computation.
+     * Each outcome and classifier should be a property of the subject or is accessible using the dot notation. If the property is an array, then a positive outcome
+     * is defined as a non-empty array, while the length of the array is considered as the value of the classifier.
+     * If the property is not an array, then it would be converted to a numeric value and a positive outcome is defined as any non-zero value.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} outcomes - An array of outcomes that defines an event.
@@ -30,10 +31,18 @@ var DRESS;
     DRESS.roc = (subjects, outcomes, classifiers) => {
         let YX;
         if (Array.isArray(subjects)) {
-            YX = subjects.map(subject => [+outcomes.every(outcome => Array.isArray(subject[outcome]) ? subject[outcome].length : +subject[outcome]),
-                ...classifiers.map(classifier => Array.isArray(subject[classifier]) ? subject[classifier].length : +subject[classifier])]);
+            YX = subjects.map(subject => [
+                +outcomes.every(outcome => {
+                    const value = DRESS.get(subject, outcome);
+                    return Array.isArray(value) ? value.length : +value;
+                }),
+                ...classifiers.map(classifier => {
+                    const value = DRESS.get(subject, classifier);
+                    return Array.isArray(value) ? value.length : +value;
+                })
+            ]);
         }
-        else if (typeof (subjects['predictions']) === 'object') {
+        else if (typeof subjects['predictions'] === 'object') {
             YX = subjects['predictions'];
         }
         else {

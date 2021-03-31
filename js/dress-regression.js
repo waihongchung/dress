@@ -1,12 +1,12 @@
 var DRESS;
 (function (DRESS) {
     /**
-     * @summary Perform multiple logistic regressions.
+     * @summary Multiple logistic regressions.
      *
      * @description This method builds a statistical model to predict the occurrence of an event based on a list of features.
      * An event is defined as the occurrence of all specified outcomes. For instance, if the specified outcomes were ['outpatient', 'uti'], then only subjects that had an UTI AND were treated as outpatient would be considered to have a positiven event.
-     * Each outcome and feature should be a property of the subject that is accessible directly by subject[outcome] or subject[feature]. If the property is an array, then a positive outcome
-     * is defined as a non-empty array, while the length of the array is used as the value of the feature. If the property is not an array, then a positive outcome is defined as any non-null value, while the numeric value of the feature is used in computation.
+     * Each outcome and feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then a positive outcome is defined as a non-empty array, while the length of the array is used as the value of the feature.
+     * If the property is not an array, then it would be converted to a numeric value and a positive outcome is defined as any non-zero value.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} outcomes - An array of outcomes that defines an event.
@@ -34,32 +34,49 @@ var DRESS;
         let sourceX;
         let Y;
         if (Array.isArray(subjects)) {
-            sourceX = subjects.map(subject => features.map(feature => Array.isArray(subject[feature]) ? subject[feature].length : +subject[feature]));
-            Y = subjects.map(subject => +outcomes.every(outcome => Array.isArray(subject[outcome]) ? subject[outcome].length : +subject[outcome]));
+            sourceX = new Array(subjects.length);
+            Y = new Array(subjects.length);
+            subjects.map((subject, index) => {
+                sourceX[index] = features.map(feature => {
+                    const value = DRESS.get(subject, feature);
+                    return Array.isArray(value) ? value.length : +value;
+                });
+                Y[index] = +outcomes.every(outcome => {
+                    const value = DRESS.get(subject, outcome);
+                    return Array.isArray(value) ? value.length : +value;
+                });
+            });
         }
-        else if ((typeof (subjects['X']) === 'object') && (typeof (subjects['Y']) === 'object')) {
+        else if ((typeof subjects['X'] === 'object') && (typeof subjects['Y'] === 'object')) {
             sourceX = subjects['X'];
             Y = subjects['Y'];
         }
         else {
             return null;
         }
-        const X = sourceX.map(Xr => [1, ...Xr]);
-        const numRow = X.length;
+        const numRow = sourceX.length;
         const numColumn = features.length + 1;
-        //
-        const xMeans = X.reduce((sums, Xr) => Xr.map((Xrc, c) => sums[c] + Xrc)).map(sum => sum / numRow);
-        const xSDs = X.reduce((sums, Xr) => Xr.map((Xrc, c) => sums[c] + Xrc * Xrc)).map((sum, c) => Math.sqrt(Math.abs(sum / numRow - xMeans[c] * xMeans[c])));
+        const means = (new Array(numColumn)).fill(0);
+        let SDs = (new Array(numColumn)).fill(0);
+        const X = sourceX.map(Xr => {
+            return [1, ...Xr].map((Xrc, c) => {
+                const temp = Xrc - means[c];
+                means[c] += temp / (c + 1);
+                SDs[c] += temp * (Xrc - means[c]);
+                return Xrc;
+            });
+        });
+        SDs = SDs.map(sd => Math.sqrt(sd / numRow));
         const coefficients = (new Array(numColumn)).fill(0);
         const SEs = (new Array(numColumn)).fill(0);
         const matrix = (new Array(numColumn)).fill(0).map(_ => (new Array(numColumn + 1)).fill(0));
         X.map(Xr => {
             for (let c = 1; c < numColumn; c++) {
-                Xr[c] -= xMeans[c];
-                Xr[c] /= xSDs[c];
+                Xr[c] -= means[c];
+                Xr[c] /= SDs[c];
             }
         });
-        const Y1 = Y.reduce((a, b) => a + b);
+        const Y1 = Y.reduce((a, b) => a + b, 0);
         const Y0 = Y.length - Y1;
         coefficients[0] = Math.log(Y1 / Y0);
         let LnV = 0;
@@ -139,9 +156,9 @@ var DRESS;
             });
         }
         for (let j = 1; j < numColumn; j++) {
-            coefficients[j] /= xSDs[j];
-            SEs[j] = Math.sqrt(matrix[j][j]) / xSDs[j];
-            coefficients[0] -= coefficients[j] * xMeans[j];
+            coefficients[j] /= SDs[j];
+            SEs[j] = Math.sqrt(matrix[j][j]) / SDs[j];
+            coefficients[0] -= coefficients[j] * means[j];
         }
         SEs[0] = 0;
         for (let j = 0; j < numColumn; j++) {
@@ -150,7 +167,7 @@ var DRESS;
                 Xj = 1;
             }
             else {
-                Xj = -xMeans[j] / xSDs[j];
+                Xj = -means[j] / SDs[j];
             }
             for (let k = 0; k < numColumn; k++) {
                 let Xk;
@@ -158,7 +175,7 @@ var DRESS;
                     Xk = 1;
                 }
                 else {
-                    Xk = -xMeans[k] / xSDs[k];
+                    Xk = -means[k] / SDs[k];
                 }
                 SEs[0] += Xj * Xk * matrix[j][k];
             }
@@ -202,11 +219,11 @@ var DRESS;
         };
     };
     /**
-     * @summary Perform multiple linear regressions.
+     * @summary Multiple linear regressions.
      *
      * @description This method builds a statistical model to predict the outcome values based on a list of features.
-     * Each outcome and feature should be a property of the subject that is accessible directly by subject[outcome] or subject[feature].
-     * If the property is an array, then the length of the array is used as the value of the outcome/feature. If the property is not an array, then the numeric value of the outcome/feature is used in computation.
+     * Each outcome and feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then the length of the array is used as the value of the outcome/feature.
+     * If the property is not an array, then it would be converted to a numeric value.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string} outcome - The outcome to be analyzed.
@@ -232,10 +249,18 @@ var DRESS;
         let X;
         let Y;
         if (Array.isArray(subjects)) {
-            X = subjects.map(subject => features.map(feature => Array.isArray(subject[feature]) ? subject[feature].length : +subject[feature]));
-            Y = subjects.map(subject => Array.isArray(subject[outcome]) ? subject[outcome].length : +subject[outcome]);
+            X = new Array(subjects.length);
+            Y = new Array(subjects.length);
+            subjects.map((subject, index) => {
+                X[index] = features.map(feature => {
+                    const value = DRESS.get(subject, feature);
+                    return Array.isArray(value) ? value.length : +value;
+                });
+                const value = DRESS.get(subject, outcome);
+                Y[index] = Array.isArray(value) ? value.length : +value;
+            });
         }
-        else if ((typeof (subjects['X']) === 'object') && (typeof (subjects['Y']) === 'object')) {
+        else if ((typeof subjects['X'] === 'object') && (typeof subjects['Y'] === 'object')) {
             X = subjects['X'];
             Y = subjects['Y'];
         }
@@ -358,13 +383,11 @@ var DRESS;
         };
     };
     /**
-     * @summary Perform simple polynomial regressions.
+     * @summary Simple polynomial regression.
      *
      * @description This method builds a statistical model to predict the outcome values based on a feature using a polynomial equation.
-     * Each outcome and feature should be a property of the subject that is accessible directly by subject[outcome] or subject[feature].
-     * If the property is an array, then the length of the array is used as the value of the outcome/feature. If the property is not an array, then the numeric value of the outcome/feature is used in computation.
-     *
-     * Internally, this method uses the linear regression method to perform the actual regression.
+     * Each outcome and feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then the length of the array is used as the value of the outcome/feature.
+     * If the property is not an array, then it would be converted to a numeric value.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string} outcome - The outcome to be analyzed.
@@ -391,10 +414,16 @@ var DRESS;
         let X;
         let Y;
         if (Array.isArray(subjects)) {
-            X = subjects.map(subject => Array.isArray(subject[feature]) ? subject[feature].length : +subject[feature]);
-            Y = subjects.map(subject => Array.isArray(subject[outcome]) ? subject[outcome].length : +subject[outcome]);
+            X = new Array(subjects.length);
+            Y = new Array(subjects.length);
+            subjects.map((subject, index) => {
+                let value = DRESS.get(subject, feature);
+                X[index] = Array.isArray(value) ? value.length : +value;
+                value = DRESS.get(subject, outcome);
+                Y[index] = Array.isArray(value) ? value.length : +value;
+            });
         }
-        else if ((typeof (subjects['X']) === 'object') && (typeof (subjects['Y']) === 'object')) {
+        else if ((typeof subjects['X'] === 'object') && (typeof subjects['Y'] === 'object')) {
             X = subjects['X'];
             Y = subjects['Y'];
         }
