@@ -25,24 +25,29 @@ var DRESS;
         const replacement = names && (names.length === features.length);
         const pad2 = replacement && names.reduce((max, name) => Math.max(max, name.length), 0);
         //
+        const numSubject = subjects.length;
         return features.map((feature, index) => {
             let min = Number.POSITIVE_INFINITY;
             let max = Number.NEGATIVE_INFINITY;
-            const values = subjects.map(subject => {
-                let value = DRESS.get(subject, feature);
-                value = Array.isArray(value) ? value.length : +value;
+            const values = new Array(numSubject);
+            let i = numSubject;
+            while (i--) {
+                const value = DRESS.numeric(DRESS.get(subjects[i], feature));
                 if (value < min) {
                     min = value;
                 }
                 if (value > max) {
                     max = value;
                 }
-                return value;
-            });
+                values[i] = value;
+            }
             const range = max - min;
             if (range !== 0) {
                 const name = replacement ? names[index] : feature;
-                subjects.map((subject, index) => DRESS.set(subject, name, (values[index] - min) / range));
+                i = numSubject;
+                while (i--) {
+                    DRESS.set(subjects[i], name, (values[i] - min) / range);
+                }
                 return {
                     feature: feature,
                     name: name,
@@ -86,26 +91,30 @@ var DRESS;
         const replacement = names && (names.length === features.length);
         const pad2 = replacement && names.reduce((max, name) => Math.max(max, name.length), 0);
         //
+        const numSubject = subjects.length;
         return features.map((feature, index) => {
             let mean = 0;
             let sd = 0;
-            const values = subjects.map((subject, index) => {
-                let value = DRESS.get(subject, feature);
-                value = Array.isArray(value) ? value.length : +value;
-                const temp = (value - mean);
-                mean += temp / (index + 1);
-                sd += temp * (value - mean);
-                return value;
-            });
+            const values = new Array(numSubject);
+            for (let i = 0; i < numSubject; i++) {
+                const value = DRESS.numeric(DRESS.get(subjects[i], feature));
+                const delta = (value - mean);
+                mean += delta / (i + 1);
+                sd += delta * (value - mean);
+                values[i] = value;
+            }
             if (sd !== 0) {
                 sd = Math.sqrt(sd / subjects.length);
                 const name = replacement ? names[index] : feature;
-                subjects.map((subject, index) => DRESS.set(subject, name, (values[index] - mean) / sd));
+                let i = numSubject;
+                while (i--) {
+                    DRESS.set(subjects[i], name, (values[i] - mean) / sd);
+                }
                 return {
-                    feature: feature,
-                    name: name,
-                    mean: mean,
-                    sd: sd,
+                    feature,
+                    name,
+                    mean,
+                    sd,
                     text: DRESS.padEnd(feature, pad) + (replacement ? (' >> ' + DRESS.padEnd(name, pad2)) : '') + ': ' + DRESS.clamp(mean) + '	(' + DRESS.clamp(sd) + ')'
                 };
             }
@@ -139,20 +148,22 @@ var DRESS;
      */
     DRESS.booleanize = (subjects, feature, truths, name = null) => {
         name = name || feature;
+        const numSubject = subjects.length;
         let count = 0;
-        subjects.map(subject => {
-            const value = DRESS.get(subject, feature);
-            const boolean = Array.isArray(value) ? truths.some(truth => value.indexOf(truth) > -1) : (truths.indexOf(value) > -1);
-            DRESS.set(subject, name, boolean);
-            if (boolean) {
+        let i = numSubject;
+        while (i--) {
+            let value = DRESS.get(subjects[i], feature);
+            value = Array.isArray(value) ? truths.some(truth => value.indexOf(truth) > -1) : (truths.indexOf(value) > -1);
+            DRESS.set(subjects[i], name, value);
+            if (value) {
                 count++;
             }
-        });
+        }
         return {
-            feature: feature,
-            name: name,
-            count: count,
-            text: feature + (name !== feature ? (' >> ' + name) : '') + ': ' + count + '	(' + DRESS.clamp(count / subjects.length * 100) + '%)'
+            feature,
+            name,
+            count,
+            text: feature + (name !== feature ? (' >> ' + name) : '') + ': ' + count + '	(' + DRESS.clamp(count / numSubject * 100) + '%)'
         };
     };
     /**
@@ -182,30 +193,35 @@ var DRESS;
         };
         //
         name = name || feature;
+        const numSubject = subjects.length;
         const counts = (new Array(categories.length)).fill(0);
-        subjects.map(subject => {
-            const value = DRESS.get(subject, feature);
+        let i = numSubject;
+        while (i--) {
+            const value = DRESS.get(subjects[i], feature);
             if (Array.isArray(value)) {
                 const matches = value.map(value => match(value, categories)).filter(i => i > -1);
-                DRESS.set(subject, name, matches);
-                matches.map(match => counts[match] += 1);
+                DRESS.set(subjects[i], name, matches);
+                let j = matches.length;
+                while (j--) {
+                    counts[matches[j]] += 1;
+                }
             }
             else {
                 const matches = match(value, categories);
-                DRESS.set(subject, name, matches);
+                DRESS.set(subjects[i], name, matches);
                 if (matches > -1) {
                     counts[matches] += 1;
                 }
                 else {
-                    DRESS.set(subject, name, null);
+                    DRESS.set(subjects[i], name, null);
                 }
             }
-        });
+        }
         return {
-            feature: feature,
-            name: name,
-            counts: counts,
-            text: feature + (name !== feature ? (' >> ' + name) : '') + ': ' + counts.map(count => count + ' (' + DRESS.clamp(count / subjects.length * 100) + '%)').join('	')
+            feature,
+            name,
+            counts,
+            text: feature + (name !== feature ? (' >> ' + name) : '') + ': ' + counts.map(count => count + ' (' + DRESS.clamp(count / numSubject * 100) + '%)').join('	')
         };
     };
     /**
@@ -215,14 +231,15 @@ var DRESS;
      * The UUID is designed in a way that each id is, for practical purposes, unique and the probability that there are duplicates is close enough to zero to be negligible.
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string} [name='id'] - Optional, the name of the property that holds the UUID. Default to 'id'.
+     * @param {string} [name='id'] - Optional, the name of the property that holds the UUID. Default to 'uuid'.
      * @returns {object[]} - An array of labeled subjects.
      */
-    DRESS.id = (subjects, name = 'id') => {
-        return subjects.map(subject => {
-            DRESS.set(subject, name, ("" + 1e7 + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c => (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >>> (+c >>> 2)).toString(16)));
-            return subject;
-        });
+    DRESS.uuid = (subjects, name = 'uuid') => {
+        let i = subjects.length;
+        while (i--) {
+            DRESS.set(subjects[i], name, ("" + 1e7 + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c => (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >>> (+c >>> 2)).toString(16)));
+        }
+        return subjects;
     };
     /**
      * @summary Organize the subjects into groups based on the specified feature.
@@ -240,19 +257,25 @@ var DRESS;
      * the other one in the specified name and contains an array of grouped subjects.
      */
     DRESS.group = (subjects, feature, name) => {
-        const groups = [];
-        subjects.map(subject => {
-            const value = DRESS.get(subject, feature);
-            let group = groups.find(group => DRESS.get(group, feature) === value);
-            if (!group) {
-                group = {};
-                DRESS.set(group, feature, value);
-                DRESS.set(group, name, []);
-                groups.push(group);
+        const objects = new Map();
+        let i = subjects.length;
+        while (i--) {
+            const value = DRESS.get(subjects[i], feature);
+            const object = objects.get(value);
+            if (object) {
+                object.push(subjects[i]);
             }
-            DRESS.get(group, name).push(subject);
+            else {
+                objects.set(value, [subjects[i]]);
+            }
+            DRESS.del(subjects[i], feature);
+        }
+        return Array.from(objects).map(([key, value]) => {
+            const object = {};
+            DRESS.set(object, feature, key);
+            DRESS.set(object, name, value);
+            return object;
         });
-        return groups;
     };
     /**
      * @sumary Create a new array of subjects by merging several arrays of subjects based on the values of the specified feature.
@@ -269,24 +292,26 @@ var DRESS;
      * @returns {object[]} An array of merged subjects.
      */
     DRESS.merge = (feature, ...arrays) => {
-        return arrays.reduce((previous, current) => {
-            current.map(subject => {
-                const value = DRESS.get(subject, feature);
-                const index = previous.findIndex(subject => DRESS.get(subject, feature) === value);
-                if (index > -1) {
-                    Object.assign(previous[index], subject);
+        const objects = new Map();
+        arrays.map(subjects => {
+            let i = subjects.length;
+            while (i--) {
+                const value = DRESS.get(subjects[i], feature);
+                const object = objects.get(value);
+                if (object) {
+                    Object.assign(object, subjects[i]);
                 }
                 else {
-                    previous.push(subject);
+                    objects.set(value, subjects[i]);
                 }
-            });
-            return previous;
+            }
         });
+        return Array.from(objects.values());
     };
     /**
-     * @summary Create a new array of containing the values of the specified feature, and optionally add a back reference to the subject.
+     * @summary Create a new array of containing the values of the specified feature(s), and optionally add a back reference to the subject.
      *
-     * @description This method creates a new array of containing the values of the specified feature, and optionally add a back reference to the subject.
+     * @description This method creates a new array of containing the values of the specified feature(s), and optionally add a back reference to the subject.
      * The feature should be a property of the subject or is accessible using the dot notation.
      *
      * Suppose there is an array of study subjects, each suject has a feature called 'encounters', which is an array of hospital encounters associated with the subject.
@@ -294,22 +319,36 @@ var DRESS;
      * pluck(subjects, 'encounters', 'subject').
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string} feature - The feature to be selected.
+     * @param {string[]} features - One or more features to be selected.
      * @param {string} [reference=null] - Optional, the name of the property that holds the back reference to the parent subject.
      * @returns {object[]} An array of feature values.
      */
-    DRESS.pluck = (subjects, feature, reference = null) => {
-        return subjects.reduce((array, subject) => {
-            const value = DRESS.get(subject, feature);
-            const values = Array.isArray(value) ? value : [value];
-            if (reference) {
-                values.map(value => {
-                    if (typeof value === 'object') {
-                        DRESS.set(value, reference, subject);
+    DRESS.pluck = (subjects, features, reference = null) => {
+        const numSubject = subjects.length;
+        const numFeature = features.length;
+        const values = new Array(numSubject);
+        if (numFeature) {
+            let i = numSubject;
+            while (i--) {
+                let value;
+                if (numFeature > 1) {
+                    value = {};
+                    let j = numFeature;
+                    while (j--) {
+                        DRESS.set(value, features[j], DRESS.get(subjects[i], features[j]));
                     }
-                });
+                }
+                else {
+                    value = DRESS.get(subjects[i], features[0]);
+                }
+                if (reference) {
+                    if ((typeof value === 'object') && !Array.isArray(value)) {
+                        DRESS.set(value, reference, subjects[i]);
+                    }
+                }
+                values[i] = value;
             }
-            return array.concat(values);
-        }, []);
+        }
+        return values;
     };
 })(DRESS || (DRESS = {}));

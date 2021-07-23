@@ -7,11 +7,11 @@ declare namespace DRESS {
      * An empty cell is treated as a null value.
      *
      * @param {string} csv - A string containing a list of comma separated values.
-     * @param {boolean} [parseNumber=true] - Automatically convert numeric values into numbers.
      * @param {string} [separator=','] - The separator character. Default to ','.
+     * @param {string} [newline='\n'] - The newline character. Default to '\n'.
      * @returns {object[]} An array of objects, each representing a row in the CSV string.
      */
-    let fromCSV: (csv: string, parseNumber?: boolean, separator?: string) => object[];
+    let fromCSV: (csv: string, separator?: string, newline?: string) => any[];
     /**
      * @summary Convert the subjects into a CSV string.
      *
@@ -20,19 +20,29 @@ declare namespace DRESS {
      * @param {object[]} subjects -  The subjects to be processed.
      * @param {string[]} [features=null] - A list of features to be included in the CSV. Default is null, in which case all enumerable properties of first subject are used.
      * @param {string} [separator=','] - The separator character. Default to ','.
+     * @param {string} [newline='\n'] - The newline character. Default to '\n'.
      * @returns {string} A string containing a CSV representation of the subjects.
      */
-    let toCSV: (subjects: object[], features?: string[], separator?: string) => string;
+    let toCSV: (subjects: object[], features?: string[], separator?: string, newline?: string) => string;
     /**
      * @summary Convert the specified features of the subjects into an array of values.
      *
      * @description This method loops through each subject and converts the value of the specified feature into an array of values.
-     * Each feature should be a property of the subject that is accessible directly by subject[feature] and each feature should be a CSV formatted string representing an array of values.
+     * Each feature should be a property of the subject or is accessible using the dot notation and each feature should be a CSV formatted string representing an array of values.
      *
      * @param {object[]} subjects -  The subjects to be processed.
      * @param {string[]} features - The features to be processed.
-     * @param {boolean} [parseNumber=true] - Automatically convert numeric values into numbers.
      * @param {string} [separator=','] - The separator character. Default to ','.
      */
-    let parseArray: (subjects: object[], features: string[], parseNumber?: boolean, seperator?: string) => void;
+    let parseArray: (subjects: object[], features: string[], seperator?: string) => void;
+    /**
+     * @summary Convert the specified features of the subjects into numeric values.
+     *
+     * @description This method loops through each subject and converts the value of the specified feature into a numeric value.
+     * Each feature should be a property of the subject or is accessible using the dot notation.
+     *
+     * @param {object[]} subjects -  The subjects to be processed.
+     * @param {string[]} features - The features to be processed.
+     */
+    let parseNumber: (subjects: object[], features: string[]) => void;
 }

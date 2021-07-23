@@ -10,7 +10,6 @@ declare namespace DRESS {
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} outcomes - An array of outcomes that defines an event.
      * @param {string[]} features - An array of features to be analyzed.
-     * @param {any} [roc=null] - The method used to compute the ROC curve. Can be set to DRESS.roc (or another custom ROC generating method). Default to null.
      * @returns {object} A result object, containing the following properties:
      *   outcomes (the array of outcomes that defines an event),
      *   deviance (the statistical deviance, or chi-square value of the model),
@@ -18,8 +17,10 @@ declare namespace DRESS {
      *   aic (the Akaike Information Criteria of the model),
      *   p (p value, based on deviance),
      *   features (an array of features),
-     *   roc (the ROC curve),
-     *   text.
+     *   text,
+     *   predict (a method for making a prediction based on the model, accepts one subject as a parameter),
+     *   roc (a method for creating an ROC curve based on the model, accepts an array of subjects as a parameter. MUST include the dress-roc.js package.),
+     *   performance (a method for evaluting the classification accuracy of the model, accepts an array of subjects and a threshold probability, default is 0.5, as parameters).
      *   For each feature, the following results are returned:
      *      feature (the feature being considered),
      *      coefficient (the regression coefficient),
@@ -29,7 +30,7 @@ declare namespace DRESS {
      *      ci (confidence interval),
      *      text.
      */
-    let logistic: (subjects: object | object[], outcomes: string[], features: string[], roc?: any) => {
+    let logistic: (subjects: object | object[], outcomes: string[], features: string[]) => {
         outcomes: string[];
         deviance: number;
         r2: number;
@@ -44,8 +45,23 @@ declare namespace DRESS {
             ci: number[];
             text: string;
         }[];
-        roc: any;
         text: string;
+        predict: (subject: object) => any;
+        roc: (subjects: object[], roc: any) => any;
+        performance(subjects: object[], threshold?: number): {
+            accuracy: number;
+            classes: {
+                class: any;
+                prevalence: number;
+                tpr: number;
+                tnr: number;
+                ppv: number;
+                npv: number;
+                f1: number;
+                text: string;
+            }[];
+            text: string;
+        };
     };
     /**
      * @summary Multiple linear regressions.
@@ -65,7 +81,9 @@ declare namespace DRESS {
      *   f (the F statistic of the model),
      *   p (p value, based on deviance),
      *   features (an array of features),
-     *   text.
+     *   text,
+     *   predict (a method for making a prediction based on the model, accepts one subject as a parameter),
+     *   performance (a method for evaluting the regression accuracy of the model, accepts an array of subjects as a parameter).
      *   For each feature, the following results are returned:
      *      feature (the feature being considered),
      *      coefficient (the regression coefficient),
@@ -74,7 +92,30 @@ declare namespace DRESS {
      *      ci (confidence interval),
      *      text.
      */
-    let linear: (subjects: object | object[], outcome: string, features: string[], origin?: boolean) => object;
+    let linear: (subjects: object | object[], outcome: string, features: string[], origin?: boolean) => {
+        outcomes: string[];
+        r2: number;
+        ar2: number;
+        aic: number;
+        f: number;
+        p: number;
+        features: {
+            feature: string;
+            coefficient: number;
+            t: number;
+            p: number;
+            ci: number[];
+            text: string;
+        }[];
+        text: string;
+        predict: (subject: object) => any;
+        performance(subjects: object[]): {
+            text: string;
+            r2: number;
+            mae: number;
+            rmse: number;
+        };
+    };
     /**
      * @summary Simple polynomial regression.
      *
@@ -94,7 +135,9 @@ declare namespace DRESS {
      *   f (the F statistic of the model),
      *   p (p value, based on deviance),
      *   features (based on the degree of the polynomial),
-     *   text.
+     *   text,
+     *   predict (a method for making a prediction based on the model, accepts one subject as a parameter),
+     *   performance (a method for evaluting the regression accuracy of the model, accepts an array of subjects as a parameter).
      *   For each feature, the following results are returned:
      *      feature (the feature being considered),
      *      coefficient (the regression coefficient),
@@ -103,5 +146,28 @@ declare namespace DRESS {
      *      ci (confidence interval),
      *      text.
      */
-    let polynomial: (subjects: object | object[], outcome: string, feature: string, degree: number, origin?: boolean) => object;
+    let polynomial: (subjects: object | object[], outcome: string, feature: string, degree: number, origin?: boolean) => {
+        outcomes: string[];
+        r2: number;
+        ar2: number;
+        aic: number;
+        f: number;
+        p: number;
+        features: {
+            feature: string;
+            coefficient: number;
+            t: number;
+            p: number;
+            ci: number[];
+            text: string;
+        }[];
+        text: string;
+        predict: (subject: object) => any;
+        performance(subjects: object[]): {
+            text: string;
+            r2: number;
+            mae: number;
+            rmse: number;
+        };
+    };
 }

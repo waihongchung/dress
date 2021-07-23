@@ -1,101 +1,151 @@
 Age,Gender,BMI,Race,Smoking,Alcohol,Etiology,Disease Duration,Comorbidities,HA1C,EGD,Medications.PPI,Medications.Metoclopramide,Medications.Erythromycin,Scales.Nausea,Scales.Pain,Scales.QoL
-35,M,35,Caucasian,Never,Rare,Diabetic,3,"Hypertension,Dyslipidemia,Diabetes,GERD",7.1,0,40,0,1,5,2,96
-36,M,32,Caucasian,Never,Rare,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,GERD",8.1,0,40,0,1,4,7,86
-42,M,29,Caucasian,Former,Social,Diabetic,5,"Dyslipidemia,Diabetes,GERD",10.3,1,20,0,0,5,2,57
-26,M,50,Caucasian,Current,Rare,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,COPD,GERD",7.5,0,20,0,0,2,5,68
-39,M,36,Caucasian,Current,Rare,Diabetic,5,"Hypertension,Dyslipidemia,Diabetes,CKD,GERD",7.8,1,0,0,0,3,3,59
-55,M,29,Caucasian,Current,Social,Diabetic,3,"Hypertension,Dyslipidemia,Diabetes,COPD",8.3,1,0,0,0,5,1,69
-35,M,31,Caucasian,Never,Rare,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes",9.4,1,0,1,0,3,0,72
-76,M,30,Caucasian,Never,Rare,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes,Coronary Artery Disease,Cerebral Vascular Disease",9.9,0,0,1,0,1,2,86
-34,M,32,Caucasian,Former,Social,Diabetic,0,"Hypertension,Dyslipidemia,Diabetes,GERD",10.1,0,20,0,0,2,3,75
-63,M,28,Caucasian,Never,Rare,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,Aortic Stenosis,GERD",11.2,0,20,0,1,3,8,57
-83,M,34,Caucasian,Never,Rare,Diabetic,0,"Hypertension,Diabetes,Coronary Artery Disease",10,0,0,0,0,4,2,77
-23,M,41,Caucasian,Current,Social,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,CKD,GERD",7,1,0,0,0,1,3,86
-71,M,35,Caucasian,Current,Rare,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes,Coronary Artery Disease,COPD,GERD",8.1,0,20,0,0,2,0,59
-62,M,37,African,Never,Frequent,Diabetic,3,"Hypertension,Dyslipidemia,Diabetes,GERD",9.1,1,40,1,0,0,3,59
-46,M,35,Hispanic,Never,Social,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes",7.2,1,40,1,0,1,1,76
-37,M,29,Hispanic,Former,Rare,Diabetic,5,"Hypertension,Diabetes,COPD",7.9,1,0,0,1,4,6,59
-35,M,30,Hispanic,Former,Social,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,CKD",8.4,0,0,0,1,2,4,69
-45,M,31,Hispanic,Current,Social,Diabetic,1,"Dyslipidemia,Diabetes",8.6,0,0,0,0,3,2,96
-56,M,28,Hispanic,Current,Rare,Diabetic,0,"Dyslipidemia,Diabetes,Aortic Stenosis,Cirrhosis",8.8,0,0,1,0,0,3,67
-37,M,33,African,Current,Frequent,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,GERD",9.9,1,40,1,0,1,0,88
-82,M,36,African,Current,Social,Diabetic,3,"Hypertension,Diabetes,Aortic Stenosis,GERD,Cirrhosis",10.2,0,20,0,0,4,2,85
-35,M,40,African,Never,Rare,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,GERD",12.1,1,20,0,0,2,1,68
-37,M,41,Asian,Never,Frequent,Diabetic,3,"Hypertension,Dyslipidemia,Diabetes",9.3,1,0,0,0,2,0,65
-47,M,40,Asian,Former,Social,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,CKD,GERD",8.4,1,0,0,1,2,8,78
-51,F,39,Caucasian,Former,Rare,Diabetic,0,"Dyslipidemia,Diabetes,Aortic Stenosis,COPD,GERD",10,0,20,0,0,1,3,69
-41,F,36,Caucasian,Current,Frequent,Diabetic,2,"Dyslipidemia,Diabetes,COPD,Cerebral Vascular Disease",9,0,0,0,0,3,2,69
-31,F,28,Caucasian,Never,Social,Diabetic,1,"Hypertension,Diabetes",7.3,0,0,0,0,5,0,80
-68,F,30,Caucasian,Never,Social,Diabetic,4,"Hypertension,Diabetes,Coronary Artery Disease,GERD",6.8,1,80,0,0,5,2,52
-36,F,32,Caucasian,Former,Rare,Diabetic,5,Diabetes,6.9,1,0,0,1,2,7,80
-47,F,41,Caucasian,Former,Social,Diabetic,5,"Hypertension,Dyslipidemia,Diabetes,CKD,COPD,GERD",10.1,1,20,0,0,3,2,69
-25,F,29,Caucasian,Current,Rare,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes,GERD",6.9,0,20,1,0,0,4,70
+73,F,29,African,Former,Social,Diabetic,1,"Hypertension,Dyslipidemia,Coronary Artery Disease,Aortic Stenosis,GERD,Cirrhosis",8,0,20,1,0,0,0,64
+24,F,31,African,Never,Social,Diabetic,0,"Hypertension,Dyslipidemia,Diabetes,CKD,COPD",9,0,0,0,1,2,3,66
+34,F,31,African,Never,Social,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes",9.3,0,0,0,0,5,0,79
+34,F,28,Asian,Never,Social,Diabetic,3,"Hypertension,Dyslipidemia,Diabetes,GERD",8,1,20,0,1,4,2,76
+64,F,32,Asian,Never,Social,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,Cerebral Vascular Disease",8.2,1,40,0,1,1,1,59
+41,F,36,Caucasian,Current,Frequent,Diabetic,2,"Dyslipidemia,Diabetes,COPD,Cerebral Vascular Disease",9,0,0,1,0,3,2,69
 45,F,34,Caucasian,Current,Frequent,Diabetic,0,"Hypertension,Dyslipidemia,Diabetes,COPD",7.2,0,0,1,0,0,1,71
-52,F,36,Caucasian,Current,Rare,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,Aortic Stenosis,GERD",7.5,1,0,1,0,1,0,86
-46,F,38,Caucasian,Never,Rare,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes",8.3,0,0,0,0,2,2,70
-32,F,41,Caucasian,Never,Frequent,Diabetic,3,"Hypertension,Diabetes,CKD,Cerebral Vascular Disease,GERD",8.8,1,40,0,0,3,0,86
-25,F,29,Hispanic,Current,Rare,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,COPD",8.1,1,40,0,1,2,8,60
-34,F,28,Asian,Never,Social,Diabetic,3,"Hypertension,Dyslipidemia,Diabetes,GERD",8,1,20,0,1,4,6,76
-62,F,25,Hispanic,Never,Frequent,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,Coronary Artery Disease,GERD",7,0,20,1,0,1,3,59
-73,F,29,African,Former,Social,Diabetic,1,"Hypertension,Dyslipidemia,Coronary Artery Disease,Aortic Stenosis,GERD,Cirrhosis",7.4,0,20,1,0,0,0,59
-24,F,31,African,Never,Social,Diabetic,0,"Hypertension,Dyslipidemia,Diabetes,CKD,COPD",9,0,0,0,1,2,7,59
-31,M,42,Caucasian,Current,Rare,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes",8.8,0,0,0,0,3,5,85
-35,M,33,Caucasian,Current,Frequent,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,Cerebral Vascular Disease,GERD",9.9,1,40,0,0,4,2,70
-64,M,32,African,Current,Social,Diabetic,0,"Hypertension,Dyslipidemia,Diabetes,Aortic Stenosis",10.2,0,0,1,1,0,4,72
-29,M,35,African,Never,Rare,Diabetic,2,"Diabetes,GERD",12.1,1,40,1,0,1,1,80
-61,M,45,Hispanic,Never,Frequent,Diabetic,5,"Diabetes,CKD",9.3,1,0,0,0,5,0,74
-63,F,44,Hispanic,Former,Social,Diabetic,3,"Hypertension,Dyslipidemia,Diabetes,Aortic Stenosis,COPD",8.4,1,0,0,0,3,3,82
-67,F,40,Hispanic,Former,Rare,Diabetic,0,"Hypertension,Dyslipidemia,Diabetes,Aortic Stenosis,GERD",10,0,40,0,0,3,0,74
-73,F,34,Hispanic,Current,Frequent,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,Coronary Artery Disease,COPD",9,0,0,0,1,4,7,63
-34,F,31,African,Never,Social,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes",7.3,0,0,0,0,5,0,79
-64,F,32,Asian,Never,Social,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,Cerebral Vascular Disease",6.8,1,40,0,1,1,8,59
-26,F,33,Caucasian,Former,Rare,Diabetic,5,"Dyslipidemia,Diabetes,CKD",6.9,1,0,0,1,0,5,65
-28,F,40,Caucasian,Former,Social,Diabetic,5,Diabetes,10.1,1,0,1,0,1,0,81
-39,F,31,Caucasian,Never,Rare,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes,GERD",6.9,0,20,1,0,0,2,72
 55,F,33,Caucasian,Current,Frequent,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,Aortic Stenosis,COPD",7.2,0,0,0,0,3,3,71
-58,F,35,Hispanic,Current,Rare,Diabetic,4,"Diabetes,Aortic Stenosis",7.5,1,0,0,1,1,5,73
-72,F,24,Hispanic,Never,Social,Idiopathic,2,"Hypertension,GERD",6.1,1,20,1,0,0,0,60
-67,M,26,African,Never,Social,Idiopathic,5,Hypertension,5.7,1,20,0,0,4,3,64
-85,M,19,Asian,Former,Rare,Idiopathic,3,"Hypertension,Cerebral Vascular Disease,GERD,Cirrhosis",5.4,1,0,0,1,5,7,80
-49,M,21,Caucasian,Former,Social,Idiopathic,2,"Hypertension,GERD",5.5,1,40,0,1,5,6,69
-75,M,18,Caucasian,Current,Rare,Idiopathic,2,"Aortic Stenosis,COPD",5.7,1,40,1,0,1,4,78
-68,M,21,Caucasian,Never,Social,Idiopathic,1,Dyslipidemia,6.1,0,0,1,0,2,3,87
-47,M,25,Hispanic,Never,Social,Idiopathic,5,"Dyslipidemia,CKD,GERD",6.3,1,40,1,0,1,0,80
-48,M,32,African,Never,Rare,Idiopathic,3,Hypertension,5.4,1,40,1,0,0,1,90
-49,M,29,Asian,Never,Social,Idiopathic,2,Hypertension,5.1,0,0,0,0,3,2,95
-72,M,25,Caucasian,Former,Social,Idiopathic,3,Hypertension,5.5,1,20,1,0,1,0,75
-39,M,20,Caucasian,Former,Frequent,Idiopathic,1,"Hypertension,Dyslipidemia,Coronary Artery Disease,COPD,Cerebral Vascular Disease,GERD",6.8,1,20,1,0,2,2,65
-51,M,22,Caucasian,Current,Rare,Idiopathic,2,"Dyslipidemia,Aortic Stenosis,COPD",6.7,1,20,1,0,0,3,59
-55,M,23,Caucasian,Never,Rare,Idiopathic,1,"Hypertension,Dyslipidemia,Coronary Artery Disease,CKD",5.1,0,0,0,1,3,7,72
-56,F,24,Hispanic,Never,Social,Idiopathic,0,Hypertension,5.2,0,0,1,0,0,0,81
-58,F,21,Caucasian,Never,Social,Idiopathic,3,Hypertension,6,1,0,1,0,1,1,59
-64,F,19,Hispanic,Current,Social,Idiopathic,6,"Hypertension,COPD,GERD",6.1,1,80,0,1,3,6,57
-47,F,19,African,Never,Social,Idiopathic,5,"Hypertension,Coronary Artery Disease,GERD",5.7,1,20,0,1,4,4,65
-52,F,18,Asian,Never,Rare,Idiopathic,0,"Dyslipidemia,Aortic Stenosis,Cirrhosis",5.6,0,20,0,0,2,4,69
-51,F,21,Caucasian,Never,Rare,Idiopathic,1,CKD,6,0,0,0,0,2,2,79
-40,F,22,Caucasian,Former,Rare,Idiopathic,2,"Hypertension,COPD",5.4,0,0,0,0,4,1,69
-50,F,23,Caucasian,Never,Social,Idiopathic,3,"Hypertension,GERD",5.5,1,20,1,1,0,7,71
-65,F,25,Hispanic,Never,Social,Idiopathic,2,"Hypertension,Dyslipidemia,Coronary Artery Disease,Cerebral Vascular Disease",5.2,1,20,0,0,2,2,78
-62,F,26,Caucasian,Current,Social,Idiopathic,1,"Hypertension,Dyslipidemia,Coronary Artery Disease,Aortic Stenosis",5.1,0,0,0,0,1,1,82
-39,F,31,Caucasian,Never,Rare,Idiopathic,2,,5,0,0,0,1,3,4,71
-50,F,33,African,Never,Social,Idiopathic,3,,5.4,1,20,0,0,1,1,56
-51,M,31,Asian,Never,Rare,Surgical,1,GERD,5.5,1,20,0,0,2,0,75
+25,F,29,Caucasian,Current,Rare,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes,GERD",7.2,0,20,1,0,0,0,70
+52,F,36,Caucasian,Current,Rare,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,Aortic Stenosis,GERD",7.5,1,0,1,0,1,0,86
+26,F,33,Caucasian,Former,Rare,Diabetic,5,"Dyslipidemia,Diabetes,CKD",7.3,1,0,0,1,0,1,65
+36,F,32,Caucasian,Former,Rare,Diabetic,5,Diabetes,7.1,1,0,0,1,2,1,80
+51,F,39,Caucasian,Former,Rare,Diabetic,0,"Dyslipidemia,Diabetes,Aortic Stenosis,COPD,GERD",10.6,0,20,0,0,1,3,69
+28,F,40,Caucasian,Former,Social,Diabetic,5,Diabetes,11.5,1,0,1,0,1,0,81
+47,F,41,Caucasian,Former,Social,Diabetic,5,"Hypertension,Dyslipidemia,Diabetes,CKD,COPD,GERD",10.1,1,20,0,0,3,2,69
+32,F,41,Caucasian,Never,Frequent,Diabetic,3,"Hypertension,Diabetes,CKD,Cerebral Vascular Disease,GERD",8.8,1,40,0,0,3,0,86
+39,F,31,Caucasian,Never,Rare,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes,GERD",6.9,0,20,1,0,0,2,72
+46,F,38,Caucasian,Never,Rare,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes",8.3,0,0,0,0,2,2,70
+31,F,28,Caucasian,Never,Social,Diabetic,1,"Hypertension,Diabetes",7.3,0,0,0,0,5,0,80
+68,F,30,Caucasian,Never,Social,Diabetic,4,"Hypertension,Diabetes,Coronary Artery Disease,GERD",6.8,1,80,0,0,5,2,70
+73,F,34,Hispanic,Current,Frequent,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,Coronary Artery Disease,COPD",9,0,0,0,1,4,3,63
+25,F,29,Hispanic,Current,Rare,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,COPD",8.1,1,40,0,0,2,0,60
+58,F,35,Hispanic,Current,Rare,Diabetic,4,"Diabetes,Aortic Stenosis",7.5,1,0,0,1,1,1,73
+67,F,40,Hispanic,Former,Rare,Diabetic,0,"Hypertension,Dyslipidemia,Diabetes,Aortic Stenosis,GERD",10,0,40,0,0,3,0,74
+63,M,44,Hispanic,Former,Social,Diabetic,3,"Hypertension,Dyslipidemia,Diabetes,Aortic Stenosis,COPD",8.4,1,0,0,0,3,3,82
+62,M,25,Hispanic,Never,Frequent,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,Coronary Artery Disease,GERD",7,0,20,1,0,1,3,78
+37,M,33,African,Current,Frequent,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,GERD",9.9,1,40,1,0,1,0,88
+64,M,32,African,Current,Social,Diabetic,0,"Hypertension,Dyslipidemia,Diabetes,Aortic Stenosis",9.8,0,0,1,1,0,4,72
+82,M,36,African,Current,Social,Diabetic,3,"Hypertension,Diabetes,Aortic Stenosis,GERD,Cirrhosis",10.2,0,20,0,0,4,2,85
+62,M,37,African,Never,Frequent,Diabetic,3,"Hypertension,Dyslipidemia,Diabetes,GERD",9.1,1,40,1,0,0,5,77
+29,M,35,African,Never,Rare,Diabetic,2,"Diabetes,GERD",12.1,1,40,1,0,1,1,80
+35,M,40,African,Never,Rare,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,GERD",10.1,1,20,0,0,2,3,68
+47,M,40,Asian,Former,Social,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,CKD,GERD",8.4,1,0,0,1,2,2,78
+37,M,41,Asian,Never,Frequent,Diabetic,3,"Hypertension,Dyslipidemia,Diabetes",9.3,1,40,0,0,2,4,65
+35,M,33,Caucasian,Current,Frequent,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,Cerebral Vascular Disease,GERD",9.9,1,40,0,0,4,2,70
+26,M,50,Caucasian,Current,Rare,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,COPD,GERD",7.5,0,20,0,0,2,5,68
+31,M,42,Caucasian,Current,Rare,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes",8.8,0,0,0,0,3,6,85
+39,M,36,Caucasian,Current,Rare,Diabetic,5,"Hypertension,Dyslipidemia,Diabetes,CKD,GERD",7.8,1,0,0,0,3,3,91
+71,M,35,Caucasian,Current,Rare,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes,Coronary Artery Disease,COPD,GERD",8.1,0,20,0,0,2,1,63
+23,M,41,Caucasian,Current,Social,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes,CKD,GERD",7,1,40,0,0,1,3,86
+55,M,29,Caucasian,Current,Social,Diabetic,3,"Hypertension,Dyslipidemia,Diabetes,COPD",8.3,1,0,0,0,5,1,69
+34,M,32,Caucasian,Former,Social,Diabetic,0,"Hypertension,Dyslipidemia,Diabetes,GERD",10.1,0,20,0,0,2,3,75
+42,M,29,Caucasian,Former,Social,Diabetic,5,"Dyslipidemia,Diabetes,GERD",9.9,1,20,0,0,5,2,80
+35,M,35,Caucasian,Never,Rare,Diabetic,3,"Hypertension,Dyslipidemia,Diabetes,GERD",7.1,0,40,0,0,5,2,96
+35,M,31,Caucasian,Never,Rare,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes",9.1,1,40,1,0,3,0,72
+36,M,32,Caucasian,Never,Rare,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,GERD",8.1,0,40,0,0,4,4,86
+63,M,28,Caucasian,Never,Rare,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,Aortic Stenosis,GERD",10.1,0,20,0,1,3,3,83
+76,M,30,Caucasian,Never,Rare,Diabetic,1,"Hypertension,Dyslipidemia,Diabetes,Coronary Artery Disease,Cerebral Vascular Disease",9.9,0,0,1,0,1,2,86
+83,M,34,Caucasian,Never,Rare,Diabetic,0,"Hypertension,Diabetes,Coronary Artery Disease",10,0,0,0,0,4,2,77
+56,M,28,Hispanic,Current,Rare,Diabetic,0,"Dyslipidemia,Diabetes,Aortic Stenosis,Cirrhosis",8.8,0,0,1,0,0,3,67
+45,M,31,Hispanic,Current,Social,Diabetic,1,"Dyslipidemia,Diabetes",8.6,0,0,0,0,3,2,96
+37,M,29,Hispanic,Former,Rare,Diabetic,5,"Hypertension,Diabetes,COPD",7.9,1,0,0,0,4,3,59
+35,M,30,Hispanic,Former,Social,Diabetic,2,"Hypertension,Dyslipidemia,Diabetes,CKD",8.4,0,40,0,0,2,4,69
+61,M,45,Hispanic,Never,Frequent,Diabetic,5,"Diabetes,CKD",9.3,1,0,0,0,5,0,74
+46,M,35,Hispanic,Never,Social,Diabetic,4,"Hypertension,Dyslipidemia,Diabetes",7.2,1,40,1,0,1,1,76
+47,M,21,African,Never,Social,Idiopathic,5,"Hypertension,Coronary Artery Disease,GERD",5.7,1,20,0,1,4,3,65
+50,M,24,African,Never,Social,Idiopathic,3,,5.4,1,20,0,0,1,1,56
+52,F,27,African,Never,Social,Idiopathic,3,,5.4,1,20,0,0,1,1,56
+80,F,21,African,Never,Social,Idiopathic,5,"Hypertension,Coronary Artery Disease,GERD",5.7,1,20,0,1,4,1,65
+52,F,18,Asian,Never,Rare,Idiopathic,0,"Dyslipidemia,Aortic Stenosis,Cirrhosis",5.6,0,20,1,1,2,3,69
+72,F,20,Asian,Never,Rare,Idiopathic,0,"Dyslipidemia,Aortic Stenosis,Cirrhosis",5.6,0,20,1,1,2,1,77
+62,F,22,Caucasian,Current,Social,Idiopathic,1,"Hypertension,Dyslipidemia,Coronary Artery Disease,Aortic Stenosis",5.1,0,0,0,0,1,0,82
+64,F,29,Caucasian,Current,Social,Idiopathic,1,"Hypertension,Dyslipidemia,Coronary Artery Disease,Aortic Stenosis",5.6,0,0,0,0,1,0,82
+40,F,20,Caucasian,Former,Rare,Idiopathic,2,"Hypertension,COPD",5.4,0,0,1,0,4,1,69
+45,F,27,Caucasian,Former,Rare,Idiopathic,2,"Hypertension,COPD",5.4,0,0,1,0,4,1,69
+39,F,23,Caucasian,Never,Rare,Idiopathic,2,,5,0,0,0,1,3,0,71
+41,F,26,Caucasian,Never,Rare,Idiopathic,2,,5,0,0,0,1,3,3,71
+51,F,19,Caucasian,Never,Rare,Idiopathic,1,CKD,6,0,0,0,0,2,2,79
+73,F,25,Caucasian,Never,Rare,Idiopathic,1,CKD,6,0,0,0,0,2,2,67
+50,F,20,Caucasian,Never,Social,Idiopathic,3,"Hypertension,GERD",5.5,1,20,1,1,3,0,71
+56,F,26,Caucasian,Never,Social,Idiopathic,3,"Hypertension,GERD",5.5,1,20,1,1,3,0,71
+58,F,18,Caucasian,Never,Social,Idiopathic,3,Hypertension,6,1,0,1,1,1,1,59
+60,F,26,Caucasian,Never,Social,Idiopathic,3,Hypertension,6,1,0,1,1,1,1,80
+64,F,19,Hispanic,Current,Social,Idiopathic,6,"Hypertension,COPD,GERD",6.1,1,0,0,1,3,1,57
+66,F,20,Hispanic,Current,Social,Idiopathic,6,"Hypertension,COPD,GERD",6.1,1,0,0,1,3,0,57
+56,F,18,Hispanic,Never,Social,Idiopathic,0,Hypertension,5.2,0,0,1,1,3,0,81
+58,F,27,Hispanic,Never,Social,Idiopathic,0,Hypertension,5.2,0,0,1,1,3,0,81
+65,F,21,Hispanic,Never,Social,Idiopathic,2,"Hypertension,Dyslipidemia,Coronary Artery Disease,Cerebral Vascular Disease",5.2,1,20,1,0,2,2,78
+69,F,25,Hispanic,Never,Social,Idiopathic,2,"Hypertension,Dyslipidemia,Coronary Artery Disease,Cerebral Vascular Disease",5.2,1,20,1,0,2,2,78
+72,F,25,Hispanic,Never,Social,Idiopathic,2,"Hypertension,GERD",6.1,1,20,1,0,5,0,60
+77,F,28,Hispanic,Never,Social,Idiopathic,2,"Hypertension,GERD",6.1,1,20,1,0,5,2,65
+48,M,20,African,Never,Rare,Idiopathic,3,Hypertension,5.4,1,40,0,1,2,1,90
+51,M,30,African,Never,Rare,Idiopathic,3,Hypertension,6.1,1,40,0,1,2,2,85
+65,M,25,African,Never,Social,Idiopathic,5,Hypertension,5.7,1,20,1,0,4,3,64
+67,M,24,African,Never,Social,Idiopathic,5,Hypertension,5.7,1,20,1,0,4,3,64
+84,M,23,Asian,Former,Rare,Idiopathic,3,"Hypertension,Cerebral Vascular Disease,GERD,Cirrhosis",5.4,1,0,1,1,5,7,80
+85,M,23,Asian,Former,Rare,Idiopathic,3,"Hypertension,Cerebral Vascular Disease,GERD,Cirrhosis",5.4,1,0,1,1,5,0,80
+49,M,21,Asian,Never,Social,Idiopathic,2,Hypertension,5.1,0,0,1,0,3,2,95
+65,M,29,Asian,Never,Social,Idiopathic,2,Hypertension,5.1,0,0,1,0,3,6,95
+51,M,24,Caucasian,Current,Rare,Idiopathic,2,"Dyslipidemia,Aortic Stenosis,COPD",5.8,1,20,1,0,5,5,59
+54,M,22,Caucasian,Current,Rare,Idiopathic,2,"Dyslipidemia,Aortic Stenosis,COPD",5.1,1,20,1,0,5,7,60
+73,M,21,Caucasian,Current,Rare,Idiopathic,2,"Aortic Stenosis,COPD",5.7,1,20,1,0,2,4,78
+75,M,19,Caucasian,Current,Rare,Idiopathic,2,"Aortic Stenosis,COPD",5.7,1,20,1,0,2,4,78
+39,M,25,Caucasian,Former,Frequent,Idiopathic,1,"Hypertension,Dyslipidemia,Coronary Artery Disease,COPD,Cerebral Vascular Disease,GERD",6.4,1,20,1,0,2,2,65
+55,M,26,Caucasian,Former,Frequent,Idiopathic,1,"Hypertension,Dyslipidemia,Coronary Artery Disease,COPD,Cerebral Vascular Disease,GERD",6.1,1,20,1,0,2,2,75
+49,M,18,Caucasian,Former,Social,Idiopathic,2,"Hypertension,GERD",5.5,1,40,1,1,5,2,69
+50,M,22,Caucasian,Former,Social,Idiopathic,2,"Hypertension,GERD",5.5,1,40,1,1,5,6,69
+70,M,28,Caucasian,Former,Social,Idiopathic,3,Hypertension,5.5,1,20,1,1,1,4,75
+72,M,23,Caucasian,Former,Social,Idiopathic,3,Hypertension,5.5,1,20,1,1,1,2,75
+55,M,25,Caucasian,Never,Rare,Idiopathic,1,"Hypertension,Dyslipidemia,Coronary Artery Disease,CKD",5.1,0,0,0,1,3,3,72
+62,M,28,Caucasian,Never,Rare,Idiopathic,1,"Hypertension,Dyslipidemia,Coronary Artery Disease,CKD",5.4,0,0,0,1,5,4,73
+68,M,21,Caucasian,Never,Social,Idiopathic,1,Dyslipidemia,6.1,0,0,1,0,3,2,87
+69,M,20,Caucasian,Never,Social,Idiopathic,1,Dyslipidemia,6.1,0,0,1,0,3,6,87
+47,M,20,Hispanic,Never,Social,Idiopathic,5,"Dyslipidemia,CKD,GERD",6.3,1,0,1,0,1,3,80
+48,M,25,Hispanic,Never,Social,Idiopathic,5,"Dyslipidemia,CKD,GERD",6.3,1,0,1,0,1,3,80
+40,M,20,African,Former,Frequent,Surgical,5,"Hypertension,Diabetes",5.5,1,20,0,0,3,2,69
+42,M,20,African,Former,Frequent,Surgical,5,"Hypertension,Diabetes",5.5,1,20,0,0,3,2,73
+31,F,25,African,Never,Social,Surgical,5,"Hypertension,Dyslipidemia",6,1,20,0,0,2,2,52
+49,F,25,African,Never,Social,Surgical,5,"Hypertension,Dyslipidemia",6,1,20,0,0,2,3,53
+52,F,21,African,Never,Social,Surgical,5,"Hypertension,Dyslipidemia",6,1,20,0,0,2,3,53
+33,F,26,Asian,Never,Social,Surgical,5,GERD,5.2,1,40,1,0,1,5,66
+34,F,25,Asian,Never,Social,Surgical,5,GERD,5.2,1,40,1,0,1,5,57
+44,F,25,Asian,Never,Social,Surgical,5,GERD,5.2,1,40,1,0,1,0,59
+25,F,25,Caucasian,Current,Rare,Surgical,3,"COPD,GERD",5.4,1,20,0,0,3,6,66
+28,F,20,Caucasian,Current,Rare,Surgical,3,"COPD,GERD",5.4,1,20,0,0,3,3,65
+41,F,23,Caucasian,Current,Rare,Surgical,3,"COPD,GERD",5.4,1,20,0,0,3,4,60
+28,F,30,Caucasian,Current,Social,Surgical,3,"Hypertension,Dyslipidemia,COPD,GERD",5.7,1,40,0,0,3,2,75
+29,F,25,Caucasian,Current,Social,Surgical,3,"Hypertension,Dyslipidemia,COPD,GERD",5.7,1,40,0,0,3,6,66
+33,F,24,Caucasian,Former,Frequent,Surgical,1,"Diabetes,Aortic Stenosis,GERD",5.5,0,20,0,0,2,4,54
+40,F,24,Caucasian,Former,Frequent,Surgical,1,"Diabetes,Aortic Stenosis,GERD",5.5,0,20,0,0,2,3,60
+45,F,25,Caucasian,Former,Frequent,Surgical,1,"Diabetes,Aortic Stenosis,GERD",5.5,0,20,0,0,2,3,66
+30,F,27,Caucasian,Former,Rare,Surgical,1,,6.3,1,20,0,0,2,4,54
+51,F,29,Caucasian,Former,Rare,Surgical,1,,6.3,1,20,0,0,2,6,54
+27,F,31,Caucasian,Never,Rare,Surgical,2,GERD,6.1,1,40,0,0,0,5,55
+31,F,25,Caucasian,Never,Rare,Surgical,2,GERD,6.1,1,40,0,0,0,1,55
+24,F,25,Caucasian,Never,Social,Surgical,4,"Hypertension,Diabetes,GERD",5.4,1,40,0,0,3,3,61
+25,F,31,Caucasian,Never,Social,Surgical,4,"Hypertension,Diabetes,GERD",5.1,1,40,0,0,4,5,61
+26,F,20,Caucasian,Never,Social,Surgical,4,Hypertension,5.6,1,0,0,0,2,2,62
+47,F,20,Caucasian,Never,Social,Surgical,4,Hypertension,5.6,1,0,0,0,2,7,62
+29,F,28,Hispanic,Never,Rare,Surgical,3,"CKD,GERD",5.4,1,20,0,0,1,2,60
+46,F,32,Hispanic,Never,Rare,Surgical,3,"CKD,GERD",5.4,1,20,0,0,1,5,60
+29,F,20,Hispanic,Never,Social,Surgical,1,"Hypertension,CKD,GERD",5.1,1,40,0,0,3,3,50
+31,F,27,Hispanic,Never,Social,Surgical,1,"Hypertension,CKD,GERD",5.1,1,40,0,0,3,3,67
+32,F,23,Hispanic,Never,Social,Surgical,1,"Hypertension,CKD,GERD",5.1,1,40,0,0,3,3,61
+41,M,29,African,Never,Frequent,Surgical,4,"Hypertension,CKD,GERD",5.4,1,20,0,1,2,6,67
+41,M,29,African,Never,Frequent,Surgical,4,"Hypertension,CKD,GERD",5.4,1,20,0,1,2,3,67
+39,M,30,Asian,Never,Rare,Surgical,1,GERD,5.5,1,20,0,0,2,5,65
+51,M,30,Asian,Never,Rare,Surgical,1,GERD,5.5,1,20,0,0,2,3,75
+26,M,28,Caucasian,Former,Rare,Surgical,5,"COPD,GERD,Diabetes",6,1,40,0,0,3,5,66
+28,M,25,Caucasian,Former,Rare,Surgical,5,"COPD,GERD,Diabetes",5.9,1,40,0,0,3,1,66
+37,M,24,Caucasian,Never,Rare,Surgical,1,Aortic Stenosis,5.2,1,40,0,1,1,5,65
+57,M,28,Caucasian,Never,Rare,Surgical,1,Aortic Stenosis,5.2,1,40,0,1,1,8,65
+33,M,30,Caucasian,Never,Social,Surgical,2,"Dyslipidemia,Diabetes,GERD",6,1,20,0,0,1,2,71
+35,M,27,Caucasian,Never,Social,Surgical,2,GERD,5.7,1,40,0,0,2,8,70
 36,M,29,Caucasian,Never,Social,Surgical,2,GERD,5.7,1,40,0,0,2,2,73
-26,M,28,Caucasian,Former,Rare,Surgical,5,"COPD,GERD,Diabetes",6.9,1,40,0,0,3,1,66
-36,M,21,Caucasian,Never,Social,Surgical,2,"Dyslipidemia,Diabetes,GERD",6,1,20,0,0,1,2,78
-39,M,31,Hispanic,Never,Social,Surgical,2,"Hypertension,Dyslipidemia,GERD",5.4,0,20,0,0,2,3,72
-41,M,23,Caucasian,Never,Social,Surgical,1,Dyslipidemia,5.5,0,20,1,0,0,2,90
-57,M,24,Caucasian,Never,Rare,Surgical,1,Aortic Stenosis,5.2,1,0,0,1,1,8,82
-41,M,19,African,Never,Frequent,Surgical,4,"Hypertension,CKD,GERD",5.4,1,20,0,1,2,6,81
-42,F,21,African,Former,Frequent,Surgical,5,"Hypertension,Diabetes",5.5,1,20,0,0,3,0,73
-28,F,23,Caucasian,Current,Social,Surgical,3,"Hypertension,Dyslipidemia,COPD,GERD",5.7,1,40,0,0,3,2,75
-27,F,21,Caucasian,Never,Rare,Surgical,2,GERD,6.1,1,40,1,0,0,1,55
-51,F,34,Caucasian,Former,Rare,Surgical,1,,6.3,1,20,0,0,2,2,54
-46,F,20,Hispanic,Never,Rare,Surgical,3,"CKD,GERD",5.4,1,20,1,0,1,2,60
-25,F,19,Caucasian,Never,Social,Surgical,4,"Hypertension,Diabetes,GERD",5.1,1,40,0,1,4,7,61
-47,F,18,Caucasian,Never,Social,Surgical,4,Hypertension,5.6,1,0,0,0,2,2,62
-52,F,21,African,Never,Social,Surgical,5,"Hypertension,Dyslipidemia",6,1,20,0,0,2,2,79
-25,F,23,Caucasian,Current,Rare,Surgical,3,"COPD,GERD",5.4,1,20,0,0,3,0,66
-45,F,25,Caucasian,Former,Frequent,Surgical,1,"Diabetes,Aortic Stenosis,GERD",5.5,0,20,0,0,2,3,72
-33,F,25,Asian,Never,Social,Surgical,5,GERD,5.2,1,40,1,0,1,0,78
-31,F,21,Hispanic,Never,Social,Surgical,1,"Hypertension,CKD,GERD",5.1,1,40,0,0,3,3,65
+36,M,21,Caucasian,Never,Social,Surgical,2,"Dyslipidemia,Diabetes,GERD",6,1,20,0,0,1,7,71
+36,M,28,Caucasian,Never,Social,Surgical,1,Dyslipidemia,5.5,0,20,1,0,0,3,53
+41,M,26,Caucasian,Never,Social,Surgical,1,Dyslipidemia,5.3,0,20,1,0,0,5,53
+39,M,24,Hispanic,Never,Social,Surgical,2,"Hypertension,Dyslipidemia,GERD",5.4,1,20,0,0,2,3,72
+40,M,30,Hispanic,Never,Social,Surgical,2,"Hypertension,Dyslipidemia,GERD",5.4,1,20,0,0,2,3,72

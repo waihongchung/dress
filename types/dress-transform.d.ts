@@ -112,10 +112,10 @@ declare namespace DRESS {
      * The UUID is designed in a way that each id is, for practical purposes, unique and the probability that there are duplicates is close enough to zero to be negligible.
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string} [name='id'] - Optional, the name of the property that holds the UUID. Default to 'id'.
+     * @param {string} [name='id'] - Optional, the name of the property that holds the UUID. Default to 'uuid'.
      * @returns {object[]} - An array of labeled subjects.
      */
-    let id: (subjects: object[], name?: string) => object[];
+    let uuid: (subjects: object[], name?: string) => object[];
     /**
      * @summary Organize the subjects into groups based on the specified feature.
      *
@@ -148,9 +148,9 @@ declare namespace DRESS {
      */
     let merge: (feature: string, ...arrays: object[][]) => object[];
     /**
-     * @summary Create a new array of containing the values of the specified feature, and optionally add a back reference to the subject.
+     * @summary Create a new array of containing the values of the specified feature(s), and optionally add a back reference to the subject.
      *
-     * @description This method creates a new array of containing the values of the specified feature, and optionally add a back reference to the subject.
+     * @description This method creates a new array of containing the values of the specified feature(s), and optionally add a back reference to the subject.
      * The feature should be a property of the subject or is accessible using the dot notation.
      *
      * Suppose there is an array of study subjects, each suject has a feature called 'encounters', which is an array of hospital encounters associated with the subject.
@@ -158,9 +158,9 @@ declare namespace DRESS {
      * pluck(subjects, 'encounters', 'subject').
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string} feature - The feature to be selected.
+     * @param {string[]} features - One or more features to be selected.
      * @param {string} [reference=null] - Optional, the name of the property that holds the back reference to the parent subject.
      * @returns {object[]} An array of feature values.
      */
-    let pluck: (subjects: object[], feature: string, reference?: string) => object;
+    let pluck: (subjects: object[], features: string[], reference?: string) => any[];
 }

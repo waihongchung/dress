@@ -18,7 +18,7 @@ var DRESS;
      *   text.
      *   For each classifier, the following results are returned:
      *      classifier (the classifier being considered),
-     *      roc (the x,y coordinates of the ROC curve for plotting purposes),
+     *      coordinates (the x,y coordinates of the ROC curve for plotting purposes),
      *      auc (the area under the ROC curve, or C-statistics),
      *      ci (AUC confidence interval),
      *      z (z score),
@@ -32,14 +32,8 @@ var DRESS;
         let YX;
         if (Array.isArray(subjects)) {
             YX = subjects.map(subject => [
-                +outcomes.every(outcome => {
-                    const value = DRESS.get(subject, outcome);
-                    return Array.isArray(value) ? value.length : +value;
-                }),
-                ...classifiers.map(classifier => {
-                    const value = DRESS.get(subject, classifier);
-                    return Array.isArray(value) ? value.length : +value;
-                })
+                +outcomes.every(outcome => DRESS.numeric(DRESS.get(subject, outcome))),
+                ...classifiers.map(classifier => DRESS.numeric(DRESS.get(subject, classifier)))
             ]);
         }
         else if (typeof subjects['predictions'] === 'object') {
@@ -51,30 +45,34 @@ var DRESS;
         const pad = classifiers.reduce((max, classifier) => Math.max(max, classifier.length), 0);
         const zCI = DRESS.anorm(DRESS.SIGNIFICANCE);
         //
+        const numSubject = YX.length;
         const Y0L = YX.filter(yx => !yx[0]).length;
-        const Y1L = YX.length - Y0L;
+        const Y1L = numSubject - Y0L;
         return {
             outcomes: outcomes,
             classifiers: classifiers.map((classifier, i) => {
+                const points = [[Number.POSITIVE_INFINITY, 0, 0, 0]];
                 const j = i + 1;
-                const points = YX.sort((a, b) => b[j] - a[j]).reduce((points, yx) => {
-                    let point = points[points.length - 1];
+                YX.sort((a, b) => a[j] - b[j]);
+                let k = numSubject;
+                let point = points[0];
+                while (k--) {
+                    const yx = YX[k];
                     if (point[0] !== yx[j]) {
                         points.push(point = [yx[j], point[1], point[2], 0]);
                     }
                     point[yx[0] + 1] += 1;
-                    return points;
-                }, [[Number.POSITIVE_INFINITY, 0, 0, 0]]);
-                //
-                points.map(point => {
-                    point[3] = (point[2] /= Y1L) - (point[1] /= Y0L);
-                });
-                //
+                }
+                k = points.length;
+                point = points[k - 1];
                 let auc = 0;
-                points.reduce((a, b) => {
-                    auc += (b[1] - a[1]) * (b[2] + a[2]) / 2;
-                    return b;
-                });
+                while (k--) {
+                    const pointK = points[k];
+                    pointK[3] = (pointK[2] /= Y1L) - (pointK[1] /= Y0L);
+                    auc += (point[1] - pointK[1]) * (point[2] + pointK[2]) / 2;
+                    point = pointK;
+                }
+                points.shift();
                 //
                 const se = Math.sqrt((auc * (1 - auc) + (Y1L - 1) * (auc / (2 - auc) - auc * auc) + (Y0L - 1) * (2 * auc * auc / (1 + auc) - auc * auc)) / (Y1L * Y0L));
                 const z = (auc - 0.5) / se;
@@ -83,12 +81,12 @@ var DRESS;
                 const youden = points.sort((a, b) => b[3] - a[3])[0];
                 const coordinates = points.map(point => [point[1], point[2]]);
                 return {
-                    classifier: classifier,
-                    coordinates: coordinates,
-                    auc: auc,
-                    ci: ci,
-                    z: z,
-                    p: p,
+                    classifier,
+                    coordinates,
+                    auc,
+                    ci,
+                    z,
+                    p,
                     cutoff: youden[0],
                     tpr: youden[2],
                     tnr: 1 - youden[1],

@@ -59,4 +59,66 @@ declare namespace DRESS {
      * @ignore
      */
     let set: (object: any, path: string, value: any) => void;
+    /**
+     * @ignore
+     */
+    let del: (object: any, path: string) => void;
+    /**
+     * @ignore
+     */
+    let numeric: (value: any) => number;
+    /**
+     * @ignore
+     */
+    let categoric: (value: any) => any;
+    /**
+     * @type {number} Set the random number generator seed.
+     */
+    let SEED: number;
+    /**
+     * @ignore
+     */
+    let random: () => number;
+    /**
+     * @ignore
+     */
+    let randi: (max: number) => number;
+    /**
+     * @ignore
+     */
+    let mode: (values: any[]) => any;
+    /**
+     * @ignore
+     */
+    let mean: (values: number[]) => number;
+    /**
+     * @ignore
+     */
+    let sum: (values: number[]) => number;
+    /**
+     * @ignore
+     */
+    let accuracies: (predictions: any[][]) => {
+        accuracy: number;
+        classes: {
+            class: string;
+            prevalence: number;
+            tpr: number;
+            tnr: number;
+            ppv: number;
+            npv: number;
+            f1: number;
+            text: string;
+        }[];
+        text: string;
+    };
+    /**
+     * @ignore
+     */
+    let errors: (predictions: any[][]) => {
+        r2: number;
+        mae: number;
+        rmse: number;
+        text: string;
+    };
 }

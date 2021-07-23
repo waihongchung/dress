@@ -1,32 +1,59 @@
 declare namespace DRESS {
     /**
-     * @summary Extract and format the text property of the result objects.
-     *
-     * @description This method loops through an array of results and extracts the text property of the result object. It also applies formatting to statistically significant results based on P values.
-     *
-     * The cutoff for statistical significance can be adjusted by setting the global DRESS.SIGNIFICANCE property. The default is 0.05.
-     *
-     * @param {object | object[]} results - A result object or an array of result objects as returned by other statistical methods within the DRESS package.
-     * @returns {string} Formatted text.
-     */
-    let text: (results: object | object[]) => string;
+    * @type {string} Set the id of the default DIV element onto which the output is displayed.
+    */
+    let DIV: string;
     /**
-     * @summary Output HTML-formatted text onto the HTML document.
+     * @summary Print text onto the default DIV element.
      *
-     * @description This method appends an HTML-formatted text to the specified HTML DOM element.
+     * @description This method appends one or more HTML-formatted text or result objects to the default DIV element, which is set by the global variable DRESS.DIV.
+     * If a result object is passed as a parameter, then the text property of the result object is extracted using the DRESS.text method.
+     * If the result object is a Promise, then a timer will be displayed automatically and the value that is resolved by the Promise will be displayed.
      *
-     * @param {string} html - HTML-formatted text, such as that returned by the DRESS.text method.
-     * @param {number} [indent=0] - Level of indentation.
-     * @param {string} [element='output'] - HTML DOM element that contains the formatted text.
+     * @param {string | object | object[]} parameters - One or more HTML-formatted text or result objects
      */
-    let output: (html: string, indent?: number, element?: string) => void;
+    let print: (...parameters: any[]) => void;
     /**
-     * @summary Download the specified content as a file.
+     * @summary Save the specified content as a file.
      *
-     * @description This method enables downloading the specified content as a file. If the specified content is NOT a string, it is converted into a JSON representation of the content first.
+     * @description This method enables saving the specified content as a file locally. If the specified content is NOT a string, it is converted into a JSON representation of the content first.
      *
-     * @param {any} content - Content to be downloaded.
+     * @param {any} content - Content to be saved.
      * @param {string} name - File name.
     */
-    let download: (content: any, name: string) => void;
+    let save: (content: any, name: string) => void;
+    /**
+     * @summary Load a local data file.
+     *
+     * @description This method inserts a file input element into the default DIV element, which is set by the global variable DRESS.DIV.
+     * After the user click on the file input element to choose the appropriate file, the content of the file is read using the FileReader API and the result is passed to the callback funciton.
+     *
+     * @param {string} label - The label to be displayed next to the file input element.
+     * @param {any} [callback=null] - The callback function, optional. Default to null, in which case the content can be resolved using the returned Promise.
+     * @param {boolean} [json=false] - Optional, specify whether the file is JSON file. Default to true.
+     * @return {Promise} A Promise that can be resolved to the content of the data file. Use only if a callback function is not specified.
+     */
+    let local: (label: string, callback?: any, json?: boolean) => Promise<unknown>;
+    /**
+     * @summary Load a remote data file.
+     *
+     * @description This method loads a remote data file using the Fetch API. It also displays the URL and the status message in the default DIV element, which is set by the global variable DRESS.DIV.
+     *
+     * @param {string} url - The URL of the remote file
+     * @param {any} [callback=null] - The callback function, optional. Default to null, in which case the content can be resolved using the returned Promise.
+     * @param {boolean} [json=false] - Optional, specify whether the file is JSON file. Default to true.
+     * @return {Promise} A Promise that can be resolved to the content of the data file. Use only if a callback function is not specified.
+     */
+    let remote: (url: string, callback?: any, json?: boolean) => Promise<unknown>;
+    /**
+     * @summary Perform an asynchronous function call.
+     *
+     * @description This method allows long operations to be performed asynchronously by using the WebWorker API.
+     * The method automatically loads all Javascript files from the HTML header to a WebWorker instance and allows methods contained within these Javascript files to be called.
+     *
+     * @param {string} method - The name of the method to be executed asynchronously.
+     * @param {any[]} parameters - One or more parameters to be passed to the method being executed asychronously. The parameters MUST be a native Javascript type that can be cloned to the WebWorker.
+     * @returns {Promise} - A Promise that can be resolved into the result returned by the method being  executed asychronously.
+     */
+    let async: (method: string, ...parameters: any[]) => Promise<unknown>;
 }

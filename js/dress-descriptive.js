@@ -12,31 +12,24 @@ var DRESS;
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} features - An array of features to be analyzed.
      * @param {object[]} [subjects2=null] - Optional, a second group of subjects.
-     * @param {boolean} [skipNull=true] - Optional, when set to true, null values are ignored. Otherwise, null is counted as zero.
      * @returns {object[]} An array of result objects, one for each feature. For each feature, the following results are returned:
      *   feature (the feature being analyzed),
-     *   count (the number of subjects with non-null values),
+     *   count (the number of subjects),
      *   median (the median value),
      *   iqr (the interquartile range, which equals to the value of the 75th percentile minus that of the 25th percentile),
-     *   count2 (the number of subjects with non-null values for the second group of subjects, only applicable if subjects2 is specified),
+     *   count2 (the number of subjects for the second group of subjects, only applicable if subjects2 is specified),
      *   median2 (the median values for the second group of subjects, only applicable if subjects2 is specified),
      *   iqr2 (the interquartile range for the second group of subjects, only applicable if subjects2 is specified),
      *   z (z score, only applicable if subjects2 is specified),
      *   p (p value, only applicable if subjects2 is specified),
      *   text.
      */
-    DRESS.medians = (subjects, features, subjects2 = null, skipNull = true) => {
+    DRESS.medians = (subjects, features, subjects2 = null) => {
         const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
         //
         return features.map(feature => {
-            const values1 = [];
-            subjects.map(subject => {
-                const value = DRESS.get(subject, feature);
-                if (!skipNull || (value !== null)) {
-                    values1.push(Array.isArray(value) ? value.length : +value);
-                }
-            });
-            const count1 = values1.sort((a, b) => a - b).length;
+            const values1 = subjects.map(subject => DRESS.numeric(DRESS.get(subject, feature))).sort((a, b) => a - b);
+            const count1 = subjects.length;
             let n = count1;
             const median1 = (n & 1) ? values1[(n - 1) / 2] : (values1[n / 2] + values1[n / 2 - 1]) / 2;
             n = (n - (n & 1)) / 2;
@@ -44,14 +37,8 @@ var DRESS;
             const q75 = (n & 1) ? values1[count1 - 1 - (n - 1) / 2] : (values1[count1 - n / 2] + values1[count1 - 1 - n / 2]) / 2;
             const iqr1 = q75 - q25;
             if (subjects2) {
-                const values2 = [];
-                subjects2.map(subject => {
-                    const value = DRESS.get(subject, feature);
-                    if (!skipNull || (value !== null)) {
-                        values2.push(Array.isArray(value) ? value.length : +value);
-                    }
-                });
-                const count2 = values2.sort((a, b) => a - b).length;
+                const values2 = subjects2.map(subject => DRESS.numeric(DRESS.get(subject, feature))).sort((a, b) => a - b);
+                const count2 = subjects2.length;
                 let n = count2;
                 const median2 = (n & 1) ? values2[(n - 1) / 2] : (values2[n / 2] + values2[n / 2 - 1]) / 2;
                 n = (n - (n & 1)) / 2;
@@ -71,7 +58,7 @@ var DRESS;
                 const count = count1 + count2;
                 const count1x2 = count1 * count2;
                 const U = count1x2 + count1 * (count1 + 1) / 2 - ranks1.map(rank => rank + ties[rank] / 2 + 1).reduce((sum, rank) => sum + rank, 0);
-                const z = Math.abs(U - count1x2 / 2) / Math.sqrt((count1x2 / (count * (count - 1))) * ((Math.pow(count, 3) - count) / 12 - ties.reduce((sum, tie) => sum + (Math.pow(tie, 3) - tie), 0) / 12));
+                const z = Math.abs(U - count1x2 / 2) / Math.sqrt((count1x2 / (count * (count - 1))) * (((Math.pow(count, 3)) - count) / 12 - ties.reduce((sum, tie) => sum + ((Math.pow(tie, 3)) - tie), 0) / 12));
                 const p = DRESS.norm(z);
                 return {
                     feature: feature,
@@ -131,20 +118,14 @@ var DRESS;
         const zCI = DRESS.anorm(DRESS.SIGNIFICANCE);
         //
         return features.map(feature => {
-            const cases1 = subjects.filter(subject => {
-                const value = DRESS.get(subject, feature);
-                return Array.isArray(value) ? value.length : +value;
-            });
+            const cases1 = subjects.filter(subject => DRESS.numeric(DRESS.get(subject, feature)));
             const n1 = subjects.length;
             const p1 = cases1.length / n1;
             const se1 = Math.sqrt(p1 * (1 - p1) / n1);
             const ci1 = [p1 - zCI * se1, p1 + zCI * se1];
             //            
             if (subjects2) {
-                const cases2 = subjects2.filter(subject => {
-                    const value = DRESS.get(subject, feature);
-                    return Array.isArray(value) ? value.length : +value;
-                });
+                const cases2 = subjects2.filter(subject => DRESS.numeric(DRESS.get(subject, feature)));
                 const n2 = subjects2.length;
                 const p2 = cases2.length / n2;
                 const se2 = Math.sqrt(p2 * (1 - p2) / n2);
@@ -215,24 +196,15 @@ var DRESS;
      */
     DRESS.frequencies = (subjects, features, subjects2 = null, limit = 25) => {
         let count = (subjects, feature) => {
-            const counters = [];
+            const counters = new Map();
             subjects.map(subject => {
                 const value = DRESS.get(subject, feature);
                 (Array.isArray(value) ? value.filter((value, index, values) => values.indexOf(value) === index) : [value]).map(value => {
                     value = String(value).trim();
-                    const counter = counters.find(counter => counter.value === value);
-                    if (!counter) {
-                        counters.push({
-                            value,
-                            count: 1
-                        });
-                    }
-                    else {
-                        counter.count += 1;
-                    }
+                    counters.set(value, (counters.get(value) || 0) + 1);
                 });
             });
-            return counters.sort((a, b) => b.count - a.count);
+            return Array.from(counters).sort((a, b) => b[1] - a[1]);
         };
         //
         const zCI = DRESS.anorm(DRESS.SIGNIFICANCE);
@@ -240,18 +212,18 @@ var DRESS;
         return features.map(feature => {
             const n1 = subjects.length;
             const counters1 = count(subjects, feature).slice(0, limit);
-            const pad = counters1.reduce((max, counter) => Math.max(max, counter.value.length), 0);
+            const pad = counters1.reduce((max, counter) => Math.max(max, counter[0].length), 0);
             if (subjects2) {
                 const n2 = subjects2.length;
                 const counters2 = count(subjects2, feature);
                 return {
                     feature: feature,
                     values: counters1.map(counter1 => {
-                        const p1 = counter1.count / n1;
+                        const p1 = counter1[1] / n1;
                         const se1 = Math.sqrt(p1 * (1 - p1) / n1);
                         const ci1 = [p1 - zCI * se1, p1 + zCI * se1];
-                        const counter2 = counters2.find(counter2 => counter1.value === counter2.value) || { count: 0 };
-                        const p2 = counter2.count / n2;
+                        const counter2 = counters2.find(counter2 => counter1[0] === counter2[0]) || ['', 0];
+                        const p2 = counter2[1] / n2;
                         const se2 = Math.sqrt(p2 * (1 - p2) / n2);
                         const ci2 = [p2 - zCI * se2, p2 + zCI * se2];
                         //
@@ -259,18 +231,18 @@ var DRESS;
                         const z = ((p1 - p2) / Math.sqrt(p12 * (1 - p12) * ((1 / n1) + (1 / n2))));
                         const p = DRESS.norm(z);
                         return {
-                            value: counter1.value,
-                            count: counter1.count,
+                            value: counter1[0],
+                            count: counter1[1],
                             proportion: p1,
                             ci: ci1,
-                            count2: counter2.count,
+                            count2: counter2[1],
                             proportion2: p2,
                             ci2: ci2,
                             z: z,
                             p: p,
-                            text: DRESS.padEnd(counter1.value, pad) + ': [' + counter1.count + ']	' + DRESS.clamp(p1 * 100) + '%'
+                            text: DRESS.padEnd(counter1[0], pad) + ': [' + counter1[1] + ']	' + DRESS.clamp(p1 * 100) + '%'
                                 + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci1.map(v => DRESS.clamp(v * 100)).join(' - ') + ')	vs'
-                                + '	[' + counter2.count + ']	' + DRESS.clamp(p2 * 100) + '%'
+                                + '	[' + counter2[1] + ']	' + DRESS.clamp(p2 * 100) + '%'
                                 + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci2.map(v => DRESS.clamp(v * 100)).join(' - ') + ')'
                                 + '	z: ' + DRESS.signed(DRESS.clamp(z)) + '	p: ' + DRESS.clamp(p)
                         };
@@ -281,12 +253,12 @@ var DRESS;
             return {
                 feature: feature,
                 values: counters1.map(counter1 => {
-                    const p1 = counter1.count / n1;
+                    const p1 = counter1[1] / n1;
                     const se1 = Math.sqrt(p1 * (1 - p1) / n1);
                     const ci1 = [p1 - zCI * se1, p1 + zCI * se1];
                     return {
-                        value: counter1.value,
-                        count: counter1.count,
+                        value: counter1[0],
+                        count: counter1[1],
                         proportion: p1,
                         ci: ci1,
                         count2: null,
@@ -294,7 +266,7 @@ var DRESS;
                         ci2: null,
                         z: null,
                         p: null,
-                        text: DRESS.padEnd(counter1.value, pad) + ': [' + counter1.count + ']	' + DRESS.clamp(p1 * 100) + '%'
+                        text: DRESS.padEnd(counter1[0], pad) + ': [' + counter1[1] + ']	' + DRESS.clamp(p1 * 100) + '%'
                             + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci1.map(v => DRESS.clamp(v * 100)).join(' - ') + ')'
                     };
                 }),
@@ -312,14 +284,13 @@ var DRESS;
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} features - An array of features to be analyzed.
      * @param {object[]} [subjects2=null] - Optional, a second group of subjects.
-     * @param {boolean} [skipNull=true] - Optional, when set to true, null values are ignored. Otherwise, null is counted as zero.
      * @returns {object[]} An array of result objects, one for each feature. For each feature, the following results are returned:
      *   feature (the feature being analyzed),
-     *   count (the number of subjects with non-null values),
+     *   count (the number of subjects),
      *   mean (the arithmetic mean of the feature),
      *   sd (the standard deviation of the feature),
      *   ci (the confidence interval of the mean),
-     *   count2 (the number of subjects with a non-null values for the second group of subjects, only applicable if subjects2 is specified),
+     *   count2 (the number of subjects for the second group of subjects, only applicable if subjects2 is specified),
      *   mean2 (the arithmetic mean of the feature for the second group of subjects, only applicable if subjects2 is specified),
      *   sd2 (the standard deviation of the feature for the second group of subjects, only applicable if subjects2 is specified),
      *   ci2 (the confidence interval of the mean for the second group of subjects, only applicable if subjects2 is specified),
@@ -327,41 +298,35 @@ var DRESS;
      *   p (p value, only applicable if subjects2 is specified),
      *   text.
      */
-    DRESS.means = (subjects, features, subjects2 = null, skipNull = true) => {
+    DRESS.means = (subjects, features, subjects2 = null) => {
         const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
-        const zCl = DRESS.anorm(DRESS.SIGNIFICANCE);
+        const zCI = DRESS.anorm(DRESS.SIGNIFICANCE);
         //
         return features.map(feature => {
-            let count1 = 0;
+            const count1 = subjects.length;
             let mean1 = 0;
             let sd1 = 0;
-            subjects.map(subject => {
-                const value = DRESS.get(subject, feature);
-                if (!skipNull || (value !== null)) {
-                    const num = Array.isArray(value) ? value.length : +value;
-                    const temp = (num - mean1);
-                    mean1 += temp / ++count1;
-                    sd1 += temp * (num - mean1);
-                }
+            subjects.map((subject, index) => {
+                const num = DRESS.numeric(DRESS.get(subject, feature));
+                const delta = (num - mean1);
+                mean1 += delta / (index + 1);
+                sd1 += delta * (num - mean1);
             });
             sd1 = Math.sqrt(sd1 / count1);
-            const ci1 = [mean1 - zCl * sd1 / Math.sqrt(count1), mean1 + zCl * sd1 / Math.sqrt(count1)];
+            const ci1 = [mean1 - zCI * sd1 / Math.sqrt(count1), mean1 + zCI * sd1 / Math.sqrt(count1)];
             //
             if (subjects2) {
-                let count2 = 0;
+                const count2 = subjects2.length;
                 let mean2 = 0;
                 let sd2 = 0;
-                subjects2.map(subject => {
-                    const value = DRESS.get(subject, feature);
-                    if (!skipNull || (value !== null)) {
-                        const num = Array.isArray(value) ? value.length : +value;
-                        const temp = (num - mean2);
-                        mean2 += temp / ++count2;
-                        sd2 += temp * (num - mean2);
-                    }
+                subjects2.map((subject, index) => {
+                    const num = DRESS.numeric(DRESS.get(subject, feature));
+                    const delta = (num - mean2);
+                    mean2 += delta / (index + 1);
+                    sd2 += delta * (num - mean2);
                 });
                 sd2 = Math.sqrt(sd2 / count2);
-                const ci2 = [mean2 - zCl * sd2 / Math.sqrt(count2), mean2 + zCl * sd2 / Math.sqrt(count2)];
+                const ci2 = [mean2 - zCI * sd2 / Math.sqrt(count2), mean2 + zCI * sd2 / Math.sqrt(count2)];
                 //      
                 const z = (mean1 - mean2) / Math.sqrt(sd1 * sd1 / count1 + sd2 * sd2 / count2);
                 const p = DRESS.norm(z);

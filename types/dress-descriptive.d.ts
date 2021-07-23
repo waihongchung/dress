@@ -11,20 +11,19 @@ declare namespace DRESS {
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} features - An array of features to be analyzed.
      * @param {object[]} [subjects2=null] - Optional, a second group of subjects.
-     * @param {boolean} [skipNull=true] - Optional, when set to true, null values are ignored. Otherwise, null is counted as zero.
      * @returns {object[]} An array of result objects, one for each feature. For each feature, the following results are returned:
      *   feature (the feature being analyzed),
-     *   count (the number of subjects with non-null values),
+     *   count (the number of subjects),
      *   median (the median value),
      *   iqr (the interquartile range, which equals to the value of the 75th percentile minus that of the 25th percentile),
-     *   count2 (the number of subjects with non-null values for the second group of subjects, only applicable if subjects2 is specified),
+     *   count2 (the number of subjects for the second group of subjects, only applicable if subjects2 is specified),
      *   median2 (the median values for the second group of subjects, only applicable if subjects2 is specified),
      *   iqr2 (the interquartile range for the second group of subjects, only applicable if subjects2 is specified),
      *   z (z score, only applicable if subjects2 is specified),
      *   p (p value, only applicable if subjects2 is specified),
      *   text.
      */
-    let medians: (subjects: object[], features: string[], subjects2?: object[], skipNull?: boolean) => {
+    let medians: (subjects: object[], features: string[], subjects2?: object[]) => {
         feature: string;
         count: number;
         median: number;
@@ -126,14 +125,13 @@ declare namespace DRESS {
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} features - An array of features to be analyzed.
      * @param {object[]} [subjects2=null] - Optional, a second group of subjects.
-     * @param {boolean} [skipNull=true] - Optional, when set to true, null values are ignored. Otherwise, null is counted as zero.
      * @returns {object[]} An array of result objects, one for each feature. For each feature, the following results are returned:
      *   feature (the feature being analyzed),
-     *   count (the number of subjects with non-null values),
+     *   count (the number of subjects),
      *   mean (the arithmetic mean of the feature),
      *   sd (the standard deviation of the feature),
      *   ci (the confidence interval of the mean),
-     *   count2 (the number of subjects with a non-null values for the second group of subjects, only applicable if subjects2 is specified),
+     *   count2 (the number of subjects for the second group of subjects, only applicable if subjects2 is specified),
      *   mean2 (the arithmetic mean of the feature for the second group of subjects, only applicable if subjects2 is specified),
      *   sd2 (the standard deviation of the feature for the second group of subjects, only applicable if subjects2 is specified),
      *   ci2 (the confidence interval of the mean for the second group of subjects, only applicable if subjects2 is specified),
@@ -141,7 +139,7 @@ declare namespace DRESS {
      *   p (p value, only applicable if subjects2 is specified),
      *   text.
      */
-    let means: (subjects: object[], features: string[], subjects2?: object[], skipNull?: boolean) => {
+    let means: (subjects: object[], features: string[], subjects2?: object[]) => {
         feature: string;
         count: number;
         mean: number;

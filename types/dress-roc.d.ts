@@ -17,7 +17,7 @@ declare namespace DRESS {
      *   text.
      *   For each classifier, the following results are returned:
      *      classifier (the classifier being considered),
-     *      roc (the x,y coordinates of the ROC curve for plotting purposes),
+     *      coordinates (the x,y coordinates of the ROC curve for plotting purposes),
      *      auc (the area under the ROC curve, or C-statistics),
      *      ci (AUC confidence interval),
      *      z (z score),

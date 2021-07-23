@@ -1,13 +1,3 @@
-function readJSON(input) {
-    if (input.files && input.files.length) {
-        var fileReader = new FileReader();
-        fileReader.readAsBinaryString(input.files[0]);
-        fileReader.onload = (event) => {
-            processJSON(JSON.parse(event.target.result));
-        };
-    }
-}
-
 function processJSON(subjects) {
     // Transform Data
     DRESS.booleanize(subjects, 'Gender', ['M'], 'Male');
@@ -19,33 +9,28 @@ function processJSON(subjects) {
     DRESS.booleanize(subjects, 'Alcohol', ['Former', 'Frequent']);
     //
 
-    DRESS.output('<b>Odds Ratio</b>');
-    DRESS.output(
-        DRESS.text(
-            DRESS.oddsRatios(subjects, ['Diabetic Gastroparesis'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
-        ) +
-        DRESS.text(
-            DRESS.oddsRatios(subjects, ['EGD', 'Medications.PPI'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
-        )
+    DRESS.print('<b>Odds Ratio</b>');
+    DRESS.print(
+        DRESS.oddsRatios(subjects, ['Diabetic Gastroparesis'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain']),
+        DRESS.oddsRatios(subjects, ['EGD', 'Medications.PPI'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
     );
 
-    DRESS.output('<b>Risk Ratio</b>');
-    DRESS.output(
-        DRESS.text(
-            DRESS.riskRatios(subjects, ['Diabetic Gastroparesis'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
-        ) +
-        DRESS.text(
-            DRESS.riskRatios(subjects, ['EGD', 'Medications.PPI'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
-        )
+    DRESS.print('<b>Risk Ratio</b>');
+    DRESS.print(
+        DRESS.riskRatios(subjects, ['Diabetic Gastroparesis'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain']),
+        DRESS.riskRatios(subjects, ['EGD', 'Medications.PPI'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
     );
 
-    DRESS.output('<b>Effect Measures</b>');
-    DRESS.output(
-        DRESS.text(
-            DRESS.effectMeasures(subjects, ['Diabetic Gastroparesis'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
-        ) +
-        DRESS.text(
-            DRESS.effectMeasures(subjects, ['EGD', 'Medications.PPI'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
-        )
+    DRESS.print('<b>Effect Measures</b>');
+    DRESS.print(
+        DRESS.effectMeasures(subjects, ['Diabetic Gastroparesis'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain']),
+        DRESS.effectMeasures(subjects, ['EGD', 'Medications.PPI'], ['Male', 'Hypertension', 'GERD', 'Diabetes', 'Smoking', 'Alcohol', 'Scales.Nausea', 'Scales.Pain'])
+    );
+
+    DRESS.print('<b>Correlations</b>');
+    DRESS.print(
+        DRESS.correlations(subjects, ['Age', 'BMI', 'Disease Duration', 'HA1C', 'Scales.Nausea', 'Scales.Pain', 'Scales.QoL'])
     );
 }
+
+DRESS.local('data.json', processJSON);

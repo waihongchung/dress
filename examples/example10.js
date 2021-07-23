@@ -1,19 +1,25 @@
-function readJSON(input) {
-    if (input.files && input.files.length) {
-        var fileReader = new FileReader();
-        fileReader.readAsBinaryString(input.files[0]);
-        fileReader.onload = (event) => {
-            processJSON(JSON.parse(event.target.result));
-        };
-    }
-}
-
 function processJSON(subjects) {
-    DRESS.output('<b>Sorting</b>'); 
 
-    DRESS.output(
-        DRESS.text(
-            DRESS.sort(subjects, ['Age', 'BMI', 'HA1C'])
-        )
+    // Randomly select 20% of subjects as samples.
+    var samples = [];
+    var controls = [];
+    subjects.filter(subject => {
+        if (Math.random() < 0.2) {
+            samples.push(subject);
+        } else {
+            controls.push(subject);
+        }
+    });
+
+    DRESS.print('<b>Exact Matching</b>');
+    DRESS.print(
+        DRESS.means(samples, ['Age', 'BMI', 'Disease Duration'], DRESS.exact(samples, controls, ['BMI', 'Disease Duration']))
+    );
+    //
+    DRESS.print('<b>Propensity Score Matching</b>');
+    DRESS.print(
+        DRESS.means(samples, ['Age', 'BMI', 'Disease Duration'], DRESS.propensity(samples, controls, ['BMI', 'Disease Duration']))
     );
 }
+
+DRESS.local('data.json', processJSON);

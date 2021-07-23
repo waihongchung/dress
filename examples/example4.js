@@ -1,20 +1,23 @@
-function readJSON(input) {
-    if (input.files && input.files.length) {
-        var fileReader = new FileReader();
-        fileReader.readAsBinaryString(input.files[0]);
-        fileReader.onload = (event) => {
-            processJSON(JSON.parse(event.target.result));
-        };
-    }
-}
-
 function processJSON(subjects) {
+    DRESS.print('<b>Pre-sort</b>');
+    subjects.filter((_, index) => index < 10).map(subject => DRESS.print(
+        'Age: ' + String(subject['Age']) +
+        '	BMI: ' + String(subject['BMI']) +
+        '	A1C: ' + String(subject['HA1C'])
+    ));
 
-    DRESS.output(
-        DRESS.text(
-            DRESS.correlations(subjects, ['Age', 'Disease Duration', 'BMI', 'HA1C', 'Scales.Nausea', 'Scales.Pain', 'Medications.PPI'])
-        )
+    DRESS.print('<b>Sorting</b>');
+    DRESS.print(
+        DRESS.sort(subjects, ['Age', 'BMI', 'HA1C'])
+
     );
 
+    DRESS.print('<b>Post-sort</b>');
+    subjects.filter((_, index) => index < 10).map(subject => DRESS.print(
+        'Age: ' + String(subject['Age']) +
+        '	BMI: ' + String(subject['BMI']) +
+        '	A1C: ' + String(subject['HA1C'])
+    ));
 }
 
+DRESS.local('data.json', processJSON);

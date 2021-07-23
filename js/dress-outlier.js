@@ -106,9 +106,9 @@ var DRESS;
                 let mean = 0;
                 let sd = 0;
                 subjectValues.map(subjectValue => {
-                    const temp = (subjectValue.value - mean);
-                    mean += temp / ++count;
-                    sd += temp * (subjectValue.value - mean);
+                    const delta = (subjectValue.value - mean);
+                    mean += delta / ++count;
+                    sd += delta * (subjectValue.value - mean);
                 });
                 sd = Math.sqrt(sd / count);
                 subjectValues.map(subjectValue => subjectValue.error = Math.abs(subjectValue.value - mean));
