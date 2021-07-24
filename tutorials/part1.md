@@ -185,7 +185,7 @@ Let's review what we have learned in Part I. We went over some basic terminologi
 We haven't really done anything remotely related to machine learning yet, but that is forthcoming in the subsequent parts of this course. Stay tuned.
 
 ## Exercise
-As an exercise, the readers can try to prepare another JSON file containing data that the city-level, instead of the census tract-level. 
+As an exercise, the readers can try to prepare another JSON file containing data at the city-level, instead of the census tract-level. 
 
 
 
