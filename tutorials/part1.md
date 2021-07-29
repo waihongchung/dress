@@ -130,7 +130,7 @@ The entire 500 Cities dataset is over 200MB and contains 810,000 rows of data an
             state: row.StateDesc,
             city: row.CityName,
             population: +row.PopulationCount
-        }
+        }        
         // Create a new property using the MeasureId as name.
         subject[row.MeasureId] = +row.Data_Value;
         subjects.set(id, subject);
@@ -140,18 +140,19 @@ The entire 500 Cities dataset is over 200MB and contains 810,000 rows of data an
     ```
     Since we know that each census tract is identified by a unique identifier, we can use it to group related data points into one object. We also use this opportunity to discard those unnecessary columns. Next, we want to convert the numerical values, such as `PopulationCount` and `Data_Value` into numbers, which can easily be accomplished in JavaScript by prefixing the variables with a `+` sign. Finally, we want to save the array of newly created subjects to a file for future use. This can be accomplished easily using the `DRESS.save` function by passing the content and a file name as parameters.
 
-4. We chose to use the `MeasureId` to identify each measure of chronic disease because they are short, but sometimes it can be difficult to figure out what the cryptic `MeasureId` means. We will build another list that maps each `MeasureId` to the detailed description of the measure.
+4. We chose to use the `MeasureId` to identify each measure of chronic disease because they are short, but sometimes it can be difficult to figure out what the cryptic `MeasureId` means. We will build another list that groups these measures by `Category` and maps each `MeasureId` to the detailed description of the measure.
     ```javascript
-    const measures = new Map();
-    //
+    const measures = {};    
     array.forEach(row => {
-        // If the MeasureId does not exist yet, add to the map.
-        if (!measures.has(row.MeasureId)) {
-            measures.set(row.MeasureId, row.Measure)
+        // If the Category does not exist yet, create a new object.
+        if (typeof measures[row.Category] === 'undefined') {
+            measures[row.Category] = {}
         }
+        // If the MeasureId does not exist yet, add to the object.
+        measures[row.Category][row.MeasureId] = row.Measure;
     })
-    // Save the array of measures as a JSON file.
-    DRESS.save(Array.from(measures), 'measures.json');
+    // Save the measures as a JSON file.
+    DRESS.save(measures, 'measures.json');
     ```
 
 5. If we run the code as is, it is likely to cause a Long-Running Script error. Despite its efficiency, processing over 200MB of data using JavaScript is going to take a certain amount of time. To prevent the browser window from freezing up, we will take advantage of another cool little function named `DRESS.async`, which allows any functions within the DRESS Kit to be executed asynchronously. The function returns a [Promise](https://developer.mozilla.org/en-US/docs/web/javascript/reference/global_objects/promise), which will eventually resolve to the output of the asynchronously executed function. We can pass the Promise to another function called `DRESS.print`, which is used to display text on the HTML, in order to display a timer as the dataset is being processed. 
@@ -170,14 +171,16 @@ The entire 500 Cities dataset is over 200MB and contains 810,000 rows of data an
                 // Filter rows by Data_Value_Type and select only those labeled 'Crude prevalence'.
                 array = array.filter(row => row.Data_Value_Type === 'Crude prevalence');
 
-                const measures = new Map();
+                const measures = {};
                 const subjects = new Map();
                 // Loop through each row.
                 array.forEach(row => {
-                    // If the MeasureId does not exist yet, add to the map.
-                    if (!measures.has(row.MeasureId)) {
-                        measures.set(row.MeasureId, row.Measure)
+                    // If the Category does not exist yet, create a new object.
+                    if (typeof measures[row.Category] === 'undefined') {
+                        measures[row.Category] = {}
                     }
+                    // If the MeasureId does not exist yet, add to the object.
+                    measures[row.Category][row.MeasureId] = row.Measure;            
                     //
                     const id = row.UniqueID;
                     // Get the subject by its UniqueID. If it does not exist yet, create a new one.
@@ -192,7 +195,7 @@ The entire 500 Cities dataset is over 200MB and contains 810,000 rows of data an
                     subjects.set(id, subject);
                 });
                 // Save the array of measures as a JSON file.
-                DRESS.save(Array.from(measures), 'measures.json');
+                DRESS.save(measures, 'measures.json');
                 // Save the array of subjects as a JSON file.
                 DRESS.save(Array.from(subjects.values()), 'data.json');                
             })
