@@ -124,38 +124,26 @@ The entire 500 Cities dataset is over 200MB and contains 810,000 rows of data an
     // Loop through each row.
     array.forEach(row => {
         const id = row.UniqueID;
-        // Get the subject by its UniqueID. If it does not exist yet, create a new one.
-        const subject = subjects.get(id) || {
-            id,
-            state: row.StateDesc,
-            city: row.CityName,
-            population: +row.PopulationCount
-        }        
-        // Create a new property using the MeasureId as name.
-        subject[row.MeasureId] = +row.Data_Value;
-        subjects.set(id, subject);
+        // Only consider census tracts with over 50 people.
+        if (+row.PopulationCount > 50) {
+            // Get the subject by its UniqueID. If it does not exist yet, create a new one.    
+            const subject = subjects.get(id) || {
+                id,
+                state: row.StateDesc,
+                city: row.CityName,
+                population: +row.PopulationCount
+            }        
+            // Create a new property using the MeasureId as name, and the numerical value of Data_Value (or null if it is an empty string) as value.
+            subject[row.MeasureId] = (row.Data_Value === '') ? null : +row.Data_Value;
+            subjects.set(id, subject);
+        }
     });
     // Save the array of subjects as a JSON file.
     DRESS.save(Array.from(subjects.values()), 'data.json');
     ```
-    Since we know that each census tract is identified by a unique identifier, we can use it to group related data points into one object. We also use this opportunity to discard those unnecessary columns. Next, we want to convert the numerical values, such as `PopulationCount` and `Data_Value` into numbers, which can easily be accomplished in JavaScript by prefixing the variables with a `+` sign. Finally, we want to save the array of newly created subjects to a file for future use. This can be accomplished easily using the `DRESS.save` function by passing the content and a file name as parameters.
+    Since we know that each census tract is identified by a unique identifier, we can use it to group related data points into one object. We also use this opportunity to discard those unnecessary columns. Additionally, we know, based on reading the dataset description that data is not provided for census tract with a population count of less than 50, but for some reasons, those census tracts were still included in the dataset. We would need to discard those census tracts. Next, we want to convert the numerical values, such as `PopulationCount` and `Data_Value` into numbers, which can easily be accomplished in JavaScript by prefixing the variables with a `+` sign, keeping in mind that missing data points are represented by an empty string. Finally, we want to save the array of newly created subjects to a file for future use. This can be accomplished easily using the `DRESS.save` function by passing the content and a file name as parameters.
 
-4. We chose to use the `MeasureId` to identify each measure of chronic disease because they are short, but sometimes it can be difficult to figure out what the cryptic `MeasureId` means. We will build another list that groups these measures by `Category` and maps each `MeasureId` to the detailed description of the measure.
-    ```javascript
-    const measures = {};    
-    array.forEach(row => {
-        // If the Category does not exist yet, create a new object.
-        if (typeof measures[row.Category] === 'undefined') {
-            measures[row.Category] = {}
-        }
-        // If the MeasureId does not exist yet, add to the object.
-        measures[row.Category][row.MeasureId] = row.Measure;
-    })
-    // Save the measures as a JSON file.
-    DRESS.save(measures, 'measures.json');
-    ```
-
-5. If we run the code as is, it is likely to cause a Long-Running Script error. Despite its efficiency, processing over 200MB of data using JavaScript is going to take a certain amount of time. To prevent the browser window from freezing up, we will take advantage of another cool little function named `DRESS.async`, which allows any functions within the DRESS Kit to be executed asynchronously. The function returns a [Promise](https://developer.mozilla.org/en-US/docs/web/javascript/reference/global_objects/promise), which will eventually resolve to the output of the asynchronously executed function. We can pass the Promise to another function called `DRESS.print`, which is used to display text on the HTML, in order to display a timer as the dataset is being processed. 
+4. If we run the code as is, it is likely to cause a Long-Running Script error. Despite its efficiency, processing over 200MB of data using JavaScript is going to take a certain amount of time. To prevent the browser window from freezing up, we will take advantage of another cool little function named `DRESS.async`, which allows any functions within the DRESS Kit to be executed asynchronously. The function returns a [Promise](https://developer.mozilla.org/en-US/docs/web/javascript/reference/global_objects/promise), which will eventually resolve to the output of the asynchronously executed function. We can pass the Promise to another function called `DRESS.print`, which is used to display text on the HTML, in order to display a timer as the dataset is being processed. 
 
     Here is the final code:
     ```javascript
@@ -171,38 +159,57 @@ The entire 500 Cities dataset is over 200MB and contains 810,000 rows of data an
                 // Filter rows by Data_Value_Type and select only those labeled 'Crude prevalence'.
                 array = array.filter(row => row.Data_Value_Type === 'Crude prevalence');
 
-                const measures = {};
                 const subjects = new Map();
                 // Loop through each row.
                 array.forEach(row => {
-                    // If the Category does not exist yet, create a new object.
-                    if (typeof measures[row.Category] === 'undefined') {
-                        measures[row.Category] = {}
-                    }
-                    // If the MeasureId does not exist yet, add to the object.
-                    measures[row.Category][row.MeasureId] = row.Measure;            
-                    //
                     const id = row.UniqueID;
-                    // Get the subject by its UniqueID. If it does not exist yet, create a new one.
-                    const subject = subjects.get(id) || {
-                        id,
-                        state: row.StateDesc,
-                        city: row.CityName,
-                        population: +row.PopulationCount
-                    };
-                    // Create a new property using the MeasureId as name.
-                    subject[row.MeasureId] = +row.Data_Value;
-                    subjects.set(id, subject);
+                    // Only consider census tracts with over 50 people.
+                    if (+row.PopulationCount > 50) {
+                        // Get the subject by its UniqueID. If it does not exist yet, create a new one.    
+                        const subject = subjects.get(id) || {
+                            id,
+                            state: row.StateDesc,
+                            city: row.CityName,
+                            population: +row.PopulationCount
+                        }        
+                        // Create a new property using the MeasureId as name, and the numerical value of Data_Value (or null if it is an empty string) as value.
+                        subject[row.MeasureId] = (row.Data_Value === '') ? null : +row.Data_Value;
+                        subjects.set(id, subject);
+                    }
                 });
-                // Save the array of measures as a JSON file.
-                DRESS.save(measures, 'measures.json');
                 // Save the array of subjects as a JSON file.
                 DRESS.save(Array.from(subjects.values()), 'data.json');                
             })
         );
     }
     ```
-    Open `part1_1.htm` in the browser, click on the File Input button, select the `data.csv` file, and finally, copy `data.json` from the browser's default Download folder to the `/data` folder within the project folder. Copy `measures.json` to the project folder for future reference.
+    Open `part1_1.htm` in the browser, click on the File Input button, select the `data.csv` file, and finally, copy `data.json` from the browser's default Download folder to the `/data` folder within the project folder.
+
+
+5. We chose to use the `MeasureId` to identify each measure of chronic disease because they are short, but sometimes it can be difficult to figure out what the cryptic `MeasureId` means. We can build another list that groups these measures by `Category` and maps each `MeasureId` to the detailed description of the measure. Simply create another JavaScript file named `part1_2.js` and load it to another HTML file similar to `part1_1.htm`. Run the script and copy `measures.json` to the project folder for future reference.
+    ```javascript
+    // Open 'data.csv' stored on the local machine.
+    DRESS.local('data.csv', processCSV, false);
+
+    function processCSV(csv) {
+        DRESS.print(
+            // Convert dataset from the CSV format to a JavaScript array.
+            DRESS.async('DRESS.fromCSV', csv).then(array => {
+                const measures = {};    
+                array.forEach(row => {
+                    // If the Category does not exist yet, create a new object.
+                    if (typeof measures[row.Category] === 'undefined') {
+                        measures[row.Category] = {}
+                    }
+                    // If the MeasureId does not exist yet, add to the object.
+                    measures[row.Category][row.MeasureId] = row.Measure;
+                })
+                // Save the measures as a JSON file.
+                DRESS.save(measures, 'measures.json');         
+            })
+        );
+    }
+    ```
 
 ## Wrap Up
 Let's review what we have learned in Part I. We went over some basic terminologies related to machine learning. In particular, we introduced the names of several common machine learning algorithms, such as decision trees, k-nearest neighbors, and neural networks, and discussed how they fit into one another. We proceeded to set up our project by downloading the 500 Cities dataset and setting up the DRESS Kit. We went through the data preparation process to extract useful data points from our dataset. Along the way, we learned several basic functions from the DRESS Kit, including `DRESS.local` (to load a local file), `DRESS.save` (to save a file to your local machine), `DRESS.fromCSV` (to convert a CSV file to native JavaScript objects), `DRESS.print` (to print text onto the HTML), and `DRESS.async` (to execute a function asynchronously).
