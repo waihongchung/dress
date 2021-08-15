@@ -35,7 +35,10 @@ var DRESS;
         //
         const events = [];
         const nonevents = [];
-        subjects.map(subject => (outcomes.every(outcome => DRESS.numeric(DRESS.get(subject, outcome))) ? events : nonevents).push(subject));
+        let i = subjects.length;
+        while (i--) {
+            (outcomes.every(outcome => DRESS.numeric(DRESS.get(subjects[i], outcome))) ? events : nonevents).push(subjects[i]);
+        }
         return {
             outcomes: outcomes,
             event: events.length,
@@ -169,10 +172,7 @@ var DRESS;
         const pad = exposures.reduce((max, exposure) => Math.max(max, exposure.length), 0);
         const zCI = DRESS.anorm(DRESS.SIGNIFICANCE);
         //
-        const events = subjects.filter(subject => outcomes.every(outcome => {
-            const value = DRESS.get(subject, outcome);
-            return Array.isArray(value) ? value.length : +value;
-        }));
+        const events = subjects.filter(subject => outcomes.every(outcome => DRESS.numeric(DRESS.get(subject, outcome))));
         return {
             outcomes: outcomes,
             event: events.length,
@@ -260,11 +260,11 @@ var DRESS;
      * Each feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then the length of the array is considered.
      * If the property is not an array, then the numeric value of the property is considered.
      *
-     * By default, the degree of correlation is measured by means of the Spearman's rank correlation coefficient.
+     * By default, the degree of correlation is measured by means of the Pearson correlation coefficient.
      *
      * @param {object[]} subjects - The subjects to be analyzed.
      * @param {string[]} features - The features to be analyzed.
-     * @param {boolean} [rank=true] - Use Spearman's rank correlation coefficient. If set to false, then the Pearson correlation coefficient is used instead.
+     * @param {boolean} [rank=false] - Use Spearman's rank correlation coefficient, default to false.
      * @returns {object[]} An array of result objects, each with the following parameters:
      *   feature (the feature being evaluated),
      *   correlations (an array of correlation results, one for each remaining feature),
@@ -277,64 +277,63 @@ var DRESS;
      *     p (p value),
      *     text.
      */
-    DRESS.correlations = (subjects, features, rank = true) => {
+    DRESS.correlations = (subjects, features, rank = false) => {
         const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
-        const n = subjects.length;
-        const zCI = DRESS.anorm(DRESS.SIGNIFICANCE) / ((n > 3) ? Math.sqrt(n - 3) : 1);
+        const numSubject = subjects.length;
+        const numFeature = features.length;
+        const zCI = DRESS.anorm(DRESS.SIGNIFICANCE) / ((numSubject > 3) ? Math.sqrt(numSubject - 3) : 1);
         //
-        const matrix = (new Array(features.length)).fill(null).map(_ => (new Array(features.length)).fill(0));
-        return features.map((featureX, row) => {
-            let valX = subjects.map(subject => DRESS.numeric(DRESS.get(subject, featureX)));
-            if (rank) {
-                const rankX = valX.slice().sort((a, b) => a - b);
-                valX = valX.map(value => rankX.indexOf(value));
+        const correlations = (new Array(numFeature)).fill(null).map(_ => new Array(numFeature));
+        const values = (new Array(numFeature)).fill(null).map(_ => new Array(numSubject));
+        let i = numFeature;
+        while (i--) {
+            const vals = values[i];
+            const feature = features[i];
+            let j = numSubject;
+            while (j--) {
+                vals[j] = DRESS.numeric(DRESS.get(subjects[j], feature));
             }
-            features.map((featureY, col) => {
-                if (row < col) {
-                    let X = 0;
-                    let Y = 0;
-                    let X2 = 0;
-                    let Y2 = 0;
-                    let XY = 0;
-                    if (rank) {
-                        const valY = subjects.map(subject => DRESS.numeric(DRESS.get(subject, featureY)));
-                        const rankY = valY.slice().sort((a, b) => a - b);
-                        valX.map((x, index) => {
-                            const y = rankY.indexOf(valY[index]);
-                            X += x;
-                            Y += y;
-                            X2 += x * x;
-                            Y2 += y * y;
-                            XY += x * y;
-                        });
-                    }
-                    else {
-                        subjects.map((subject, index) => {
-                            const x = valX[index];
-                            const y = DRESS.numeric(DRESS.get(subject, featureY));
-                            X += x;
-                            Y += y;
-                            X2 += x * x;
-                            Y2 += y * y;
-                            XY += x * y;
-                        });
-                    }
-                    const r = (n * XY - X * Y) / (Math.sqrt(n * X2 - X * X) * Math.sqrt(n * Y2 - Y * Y));
-                    const zR = Math.log((1 + r) / (1 - r)) / 2;
-                    const ci = [(Math.exp(2 * (zR - zCI)) - 1) / (Math.exp(2 * (zR - zCI)) + 1), (Math.exp(2 * (zR + zCI)) - 1) / (Math.exp(2 * (zR + zCI)) + 1)];
-                    const t = r * Math.sqrt((n - 2) / (1 - r * r));
-                    const p = DRESS.tdist(t, n - 2);
-                    matrix[row][col] = matrix[col][row] = {
-                        r: r,
-                        ci: ci,
-                        t: t,
-                        p: p
-                    };
+            if (rank) {
+                const rank = vals.slice().sort((a, b) => a - b);
+                j = numSubject;
+                while (j--) {
+                    vals[j] = rank.indexOf(vals[j]);
                 }
-            });
+            }
+        }
+        return features.map((feature, row) => {
+            let col = numFeature;
+            while (--col > row) {
+                let X = 0;
+                let Y = 0;
+                let X2 = 0;
+                let Y2 = 0;
+                let XY = 0;
+                i = numSubject;
+                while (i--) {
+                    const x = values[row][i];
+                    const y = values[col][i];
+                    X += x;
+                    Y += y;
+                    X2 += x * x;
+                    Y2 += y * y;
+                    XY += x * y;
+                }
+                const r = (numSubject * XY - X * Y) / (Math.sqrt(numSubject * X2 - X * X) * Math.sqrt(numSubject * Y2 - Y * Y));
+                const zR = Math.log((1 + r) / (1 - r)) / 2;
+                const ci = [(Math.exp(2 * (zR - zCI)) - 1) / (Math.exp(2 * (zR - zCI)) + 1), (Math.exp(2 * (zR + zCI)) - 1) / (Math.exp(2 * (zR + zCI)) + 1)];
+                const t = r * Math.sqrt((numSubject - 2) / (1 - r * r));
+                const p = DRESS.tdist(t, numSubject - 2);
+                correlations[row][col] = correlations[col][row] = {
+                    r,
+                    ci,
+                    t,
+                    p
+                };
+            }
             return {
-                feature: featureX,
-                correlations: matrix[row].map((correlation, col) => (correlation) ?
+                feature: feature,
+                correlations: correlations[row].map((correlation, col) => (correlation) ?
                     {
                         feature: features[col],
                         r: correlation.r,
@@ -344,7 +343,7 @@ var DRESS;
                         text: DRESS.padEnd(features[col], pad) + ': ' + DRESS.signed(DRESS.clamp(correlation.r)) + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + correlation.ci.map(v => DRESS.signed(DRESS.clamp(v))).join(' - ') + ')'
                             + '	t: ' + DRESS.signed(DRESS.clamp(correlation.t)) + '	p: ' + DRESS.clamp(correlation.p)
                     } : null).filter(_ => _),
-                text: '[' + featureX + ']'
+                text: '[' + feature + ']'
             };
         });
     };

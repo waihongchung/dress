@@ -49,16 +49,16 @@ var DRESS;
                     DRESS.set(subjects[i], name, (values[i] - min) / range);
                 }
                 return {
-                    feature: feature,
-                    name: name,
-                    min: min,
-                    max: max,
-                    range: range,
+                    feature,
+                    name,
+                    min,
+                    max,
+                    range,
                     text: DRESS.padEnd(feature, pad) + (replacement ? (' >> ' + DRESS.padEnd(name, pad2)) : '') + ': ' + DRESS.clamp(min) + ' - ' + DRESS.clamp(max) + '	(' + DRESS.clamp(range) + ')'
                 };
             }
             return {
-                feature: feature,
+                feature,
                 name: null,
                 min: null,
                 max: null,
@@ -119,7 +119,7 @@ var DRESS;
                 };
             }
             return {
-                feature: feature,
+                feature,
                 name: null,
                 mean: null,
                 sd: null,
@@ -128,48 +128,97 @@ var DRESS;
         });
     };
     /**
-     * @summary Reduce the values of the specified feature into a boolean value (i.e. true or false).
+     * @summary Reduce the values of the specified features into a boolean value (i.e. true or false).
      *
-     * @description This method evaluates the value of the specified feature in each subject.
+     * @description This method evaluates the value of the specified features in each subject.
      * Each feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then logical TRUE is defined as the presence of one or more values within the truths array within the property array.
      * Otherwise, the logical TRUE is defined as the presence of the property value within the truths array.
      *
      * NOTE: By default, this method is destructive and directly alters the values of the specified feature. To store the transformed results in a different property, the name parameter must be specified.
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string} feature - A feature to be processed.
+     * @param {string[]} features - An array of features to be processed.
      * @param {any[]} truths - A list of values that are considered as logical TRUE.
-     * @param {string} [name=null] - A property name to be used to store the results.
-     * @returns {object} An object containing the following transformation parameters for debugging purposes:
+     * @param {string[]} [names=null] - An array of property names to be used to store the results. It MUST be of the same length as the features array.
+     * @returns {object[]} An array of transformation parameters for debugging purposes. For each transformed feature, the following parameters are returned:
      *   feature (the feature transformed),
      *   name (the name of property that store the transformed values),
      *   count (the number of subjects that were considered as logical TRUE),
      *   text
      */
-    DRESS.booleanize = (subjects, feature, truths, name = null) => {
-        name = name || feature;
+    DRESS.booleanize = (subjects, features, truths, names = null) => {
+        const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
+        const replacement = names && (names.length === features.length);
+        const pad2 = replacement && names.reduce((max, name) => Math.max(max, name.length), 0);
+        //
         const numSubject = subjects.length;
-        let count = 0;
-        let i = numSubject;
-        while (i--) {
-            let value = DRESS.get(subjects[i], feature);
-            value = Array.isArray(value) ? truths.some(truth => value.indexOf(truth) > -1) : (truths.indexOf(value) > -1);
-            DRESS.set(subjects[i], name, value);
-            if (value) {
-                count++;
+        return features.map((feature, index) => {
+            const name = replacement ? names[index] : feature;
+            let count = 0;
+            let i = numSubject;
+            while (i--) {
+                let value = DRESS.get(subjects[i], feature);
+                value = Array.isArray(value) ? truths.some(truth => value.indexOf(truth) > -1) : (truths.indexOf(value) > -1);
+                DRESS.set(subjects[i], name, value);
+                if (value) {
+                    count++;
+                }
             }
-        }
-        return {
-            feature,
-            name,
-            count,
-            text: feature + (name !== feature ? (' >> ' + name) : '') + ': ' + count + '	(' + DRESS.clamp(count / numSubject * 100) + '%)'
-        };
+            return {
+                feature,
+                name,
+                count,
+                text: DRESS.padEnd(feature, pad) + (replacement ? (' >> ' + DRESS.padEnd(name, pad2)) : '') + ': ' + count + '	(' + DRESS.clamp(count / numSubject * 100) + '%)'
+            };
+        });
     };
     /**
-     * @summary Categorize the values of the specified feature and encode the result using numerical values.
+     * @summary Set the nullable values of the specified features to null.
      *
-     * @description This method categorizes the value of the specified feature in each subject by matching it to one of the specified categories.
+     * @description This method evaluates the value of the specified features in each subject.
+     * Each feature should be a property of the subject or is accessible using the dot notation. If the value of the property matches one of the values defined in the nulls array, the property is set to null.
+     *
+     * NOTE: By default, this method is destructive and directly alters the values of the specified feature. To store the transformed results in a different property, the name parameter must be specified.
+     *
+     * @param {object[]} subjects - The subjects to be processed.
+     * @param {string[]} features - An array of features to be processed.
+     * @param {any[]} truths - A list of values that are considered as null.
+     * @param {string[]} [names=null] - An array of property names to be used to store the results. It MUST be of the same length as the features array.
+     * @returns {object[]} An array of transformation parameters for debugging purposes. For each transformed feature, the following parameters are returned:
+     *   feature (the feature transformed),
+     *   name (the name of property that store the transformed values),
+     *   count (the number of subjects that were set to null),
+     *   text
+     */
+    DRESS.nullify = (subjects, features, nulls, names = null) => {
+        const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
+        const replacement = names && (names.length === features.length);
+        const pad2 = replacement && names.reduce((max, name) => Math.max(max, name.length), 0);
+        //
+        const numSubject = subjects.length;
+        return features.map((feature, index) => {
+            const name = replacement ? names[index] : feature;
+            let count = 0;
+            let i = numSubject;
+            while (i--) {
+                const value = DRESS.get(subjects[i], feature);
+                if (nulls.indexOf(value) > -1) {
+                    DRESS.set(subjects[i], name, null);
+                    count++;
+                }
+            }
+            return {
+                feature,
+                name,
+                count,
+                text: DRESS.padEnd(feature, pad) + (replacement ? (' >> ' + DRESS.padEnd(name, pad2)) : '') + ': ' + count + '	(' + DRESS.clamp(count / numSubject * 100) + '%)'
+            };
+        });
+    };
+    /**
+     * @summary Categorize the values of the specified features and encode the result using numerical values.
+     *
+     * @description This method categorizes the value of the specified features in each subject by matching it to one of the specified categories.
      * Each feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then each value in the property is matched individually, and an empty array is returned if no match is found.
      * If the property is NOT an array, then the value is matched directly against the specified categories. If no match is found, then the property is set to null.
      *
@@ -178,51 +227,57 @@ var DRESS;
      * NOTE: By default, this method is destructive and directly alters the values of the specified feature. To store the transformed results in a different property, the name parameter must be specified.
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string} feature - A feature to be processed.
+     * @param {string[]} features - An array of features to be processed.
      * @param {any[]} categories - An array of categories. The index of each category is used for encoding.
-     * @param {string} [name=null] - A property name to be used to store the results.
-     * @returns {object} An object containing the following transformation parameters for debugging purposes:
+     * @param {string[]} [names=null] - An array of property names to be used to store the results. It MUST be of the same length as the features array.
+     * @returns {object[]} An array of transformation parameters for debugging purposes. For each transformed feature, the following parameters are returned:
      *   feature (the feature transformed),
      *   name (the name of property that store the transformed values),
      *   counts (an array representing the number of matched subjects in each category).
      *   text
      */
-    DRESS.categorize = (subjects, feature, categories, name = null) => {
+    DRESS.categorize = (subjects, features, categories, names = null) => {
         let match = (value, categories) => {
             return categories.findIndex(category => Array.isArray(category) ? (category.indexOf(value) > -1) : (category === value));
         };
         //
-        name = name || feature;
+        const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
+        const replacement = names && (names.length === features.length);
+        const pad2 = replacement && names.reduce((max, name) => Math.max(max, name.length), 0);
+        //
         const numSubject = subjects.length;
-        const counts = (new Array(categories.length)).fill(0);
-        let i = numSubject;
-        while (i--) {
-            const value = DRESS.get(subjects[i], feature);
-            if (Array.isArray(value)) {
-                const matches = value.map(value => match(value, categories)).filter(i => i > -1);
-                DRESS.set(subjects[i], name, matches);
-                let j = matches.length;
-                while (j--) {
-                    counts[matches[j]] += 1;
-                }
-            }
-            else {
-                const matches = match(value, categories);
-                DRESS.set(subjects[i], name, matches);
-                if (matches > -1) {
-                    counts[matches] += 1;
+        return features.map((feature, index) => {
+            const name = replacement ? names[index] : feature;
+            const counts = (new Array(categories.length)).fill(0);
+            let i = numSubject;
+            while (i--) {
+                const value = DRESS.get(subjects[i], feature);
+                if (Array.isArray(value)) {
+                    const matches = value.map(value => match(value, categories)).filter(i => i > -1);
+                    DRESS.set(subjects[i], name, matches);
+                    let j = matches.length;
+                    while (j--) {
+                        counts[matches[j]] += 1;
+                    }
                 }
                 else {
-                    DRESS.set(subjects[i], name, null);
+                    const matches = match(value, categories);
+                    DRESS.set(subjects[i], name, matches);
+                    if (matches > -1) {
+                        counts[matches] += 1;
+                    }
+                    else {
+                        DRESS.set(subjects[i], name, null);
+                    }
                 }
             }
-        }
-        return {
-            feature,
-            name,
-            counts,
-            text: feature + (name !== feature ? (' >> ' + name) : '') + ': ' + counts.map(count => count + ' (' + DRESS.clamp(count / numSubject * 100) + '%)').join('	')
-        };
+            return {
+                feature,
+                name,
+                counts,
+                text: DRESS.padEnd(feature, pad) + (replacement ? (' >> ' + DRESS.padEnd(name, pad2)) : '') + ': ' + counts.map(count => count + ' (' + DRESS.clamp(count / numSubject * 100) + '%)').join('	')
+            };
+        });
     };
     /**
      * @summary Generate a UUID for each subject.
@@ -315,8 +370,8 @@ var DRESS;
      * The feature should be a property of the subject or is accessible using the dot notation.
      *
      * Suppose there is an array of study subjects, each suject has a feature called 'encounters', which is an array of hospital encounters associated with the subject.
-     * You can create a new array of encounters, by calling pluck(subjects, 'encounters'). You can optionally create, as a property of each encounter object, a back reference, called 'subject' to the parent subject, by calling
-     * pluck(subjects, 'encounters', 'subject').
+     * You can create a new array of encounters, by calling pluck(subjects, ['encounters']). You can optionally create, as a property of each encounter object, a back reference, called 'subject' to the parent subject, by calling
+     * pluck(subjects, ['encounters'], 'subject').
      *
      * @param {object[]} subjects - The subjects to be processed.
      * @param {string[]} features - One or more features to be selected.

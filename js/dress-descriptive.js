@@ -17,75 +17,100 @@ var DRESS;
      *   count (the number of subjects),
      *   median (the median value),
      *   iqr (the interquartile range, which equals to the value of the 75th percentile minus that of the 25th percentile),
+     *   skewness (the Galton skewness),
+     *   kurtosis (the excess percentile kurtosis),
      *   count2 (the number of subjects for the second group of subjects, only applicable if subjects2 is specified),
      *   median2 (the median values for the second group of subjects, only applicable if subjects2 is specified),
      *   iqr2 (the interquartile range for the second group of subjects, only applicable if subjects2 is specified),
+     *   skewness2 (the Galton skewness for the second group of subjects, only applicable if subjects2 is specified),
+     *   kurtosis2 (the excess percentile kurtosis for the second group of subjects, only applicable if subjects2 is specified),
      *   z (z score, only applicable if subjects2 is specified),
      *   p (p value, only applicable if subjects2 is specified),
      *   text.
      */
     DRESS.medians = (subjects, features, subjects2 = null) => {
+        let quartiles = (subjects, feature) => {
+            const numSubject = subjects.length;
+            const values = new Array(numSubject);
+            let i = numSubject;
+            while (i--) {
+                values[i] = DRESS.numeric(DRESS.get(subjects[i], feature));
+            }
+            values.sort((a, b) => a - b);
+            i = numSubject;
+            const median = (i & 1) ? values[(i - 1) / 2] : (values[i / 2] + values[i / 2 - 1]) / 2;
+            i >>>= 1;
+            const q25 = (i & 1) ? values[(i - 1) / 2] : (values[i / 2] + values[i / 2 - 1]) / 2;
+            const q75 = (i & 1) ? values[numSubject - 1 - (i - 1) / 2] : (values[numSubject - i / 2] + values[numSubject - 1 - i / 2]) / 2;
+            const iqr = q75 - q25;
+            const p10 = values[Math.floor(numSubject * 0.1)];
+            const p90 = values[Math.floor(numSubject * 0.9)];
+            return [numSubject, median, iqr, (q25 + q75 - 2 * median) / iqr, iqr / (2 * (p90 - p10)) - 0.263, values];
+        };
+        //
         const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
         //
         return features.map(feature => {
-            const values1 = subjects.map(subject => DRESS.numeric(DRESS.get(subject, feature))).sort((a, b) => a - b);
-            const count1 = subjects.length;
-            let n = count1;
-            const median1 = (n & 1) ? values1[(n - 1) / 2] : (values1[n / 2] + values1[n / 2 - 1]) / 2;
-            n = (n - (n & 1)) / 2;
-            const q25 = (n & 1) ? values1[(n - 1) / 2] : (values1[n / 2] + values1[n / 2 - 1]) / 2;
-            const q75 = (n & 1) ? values1[count1 - 1 - (n - 1) / 2] : (values1[count1 - n / 2] + values1[count1 - 1 - n / 2]) / 2;
-            const iqr1 = q75 - q25;
+            const quartiles1 = quartiles(subjects, feature);
             if (subjects2) {
-                const values2 = subjects2.map(subject => DRESS.numeric(DRESS.get(subject, feature))).sort((a, b) => a - b);
-                const count2 = subjects2.length;
-                let n = count2;
-                const median2 = (n & 1) ? values2[(n - 1) / 2] : (values2[n / 2] + values2[n / 2 - 1]) / 2;
-                n = (n - (n & 1)) / 2;
-                const q25 = (n & 1) ? values2[(n - 1) / 2] : (values2[n / 2] + values2[n / 2 - 1]) / 2;
-                const q75 = (n & 1) ? values2[count2 - 1 - (n - 1) / 2] : (values2[count2 - n / 2] + values2[count2 - 1 - n / 2]) / 2;
-                const iqr2 = q75 - q25;
+                const quartiles2 = quartiles(subjects2, feature);
                 //                
-                const values = values1.concat(values2).sort((a, b) => a - b);
-                const ranks1 = values1.map(value => values.indexOf(value));
-                const ranks2 = values2.map(value => values.indexOf(value));
-                const ties = (new Array(values.length)).fill(0);
-                ranks1.concat(ranks2).sort((a, b) => a - b).map((rank, index) => {
-                    if (rank !== index) {
-                        ties[rank] += 1;
-                    }
-                });
+                const values = quartiles1[5 /* VALUES */].concat(quartiles2[5 /* VALUES */]).sort((a, b) => a - b);
+                const ranks1 = quartiles1[5 /* VALUES */].map(value => values.indexOf(value));
+                const ranks2 = quartiles2[5 /* VALUES */].map(value => values.indexOf(value));
+                const ranks = ranks1.concat(ranks2).sort((a, b) => a - b);
+                const count1 = quartiles1[0 /* COUNT */];
+                const count2 = quartiles2[0 /* COUNT */];
                 const count = count1 + count2;
+                const ties = (new Array(count)).fill(0);
+                let i = count;
+                while (i--) {
+                    if (ranks[i] !== i) {
+                        ties[ranks[i]] += 1;
+                    }
+                }
+                i = count1;
+                while (i--) {
+                    ranks1[i] += ties[ranks1[i]] / 2 + 1;
+                }
                 const count1x2 = count1 * count2;
-                const U = count1x2 + count1 * (count1 + 1) / 2 - ranks1.map(rank => rank + ties[rank] / 2 + 1).reduce((sum, rank) => sum + rank, 0);
+                const U = count1x2 + count1 * (count1 + 1) / 2 - ranks1.reduce((sum, rank) => sum + rank);
                 const z = Math.abs(U - count1x2 / 2) / Math.sqrt((count1x2 / (count * (count - 1))) * (((Math.pow(count, 3)) - count) / 12 - ties.reduce((sum, tie) => sum + ((Math.pow(tie, 3)) - tie), 0) / 12));
                 const p = DRESS.norm(z);
                 return {
                     feature: feature,
                     count: count1,
-                    median: median1,
-                    iqr: iqr1,
+                    median: quartiles1[1 /* MEDIAN */],
+                    iqr: quartiles1[2 /* IQR */],
+                    skewness: quartiles1[3 /* SKEWNESS */],
+                    kurtosis: quartiles1[4 /* KURTOSIS */],
                     count2: count2,
-                    median2: median2,
-                    iqr2: iqr2,
+                    median2: quartiles2[1 /* MEDIAN */],
+                    iqr2: quartiles2[2 /* IQR */],
+                    skewness2: quartiles2[3 /* SKEWNESS */],
+                    kurtosis2: quartiles2[4 /* KURTOSIS */],
                     z: z,
                     p: p,
-                    text: DRESS.padEnd(feature, pad) + ': [' + count1 + ']	' + DRESS.clamp(median1) + '	IQR: ' + DRESS.clamp(iqr1) + '	vs'
-                        + ' [' + count2 + ']	' + DRESS.clamp(median2) + '	IQR: ' + DRESS.clamp(iqr2)
-                        + '	z: ' + DRESS.signed(DRESS.clamp(z)) + '	p: ' + DRESS.clamp(p)
+                    text: DRESS.padEnd(feature, pad) + ': [' + count1 + ']	' + DRESS.clamp(quartiles1[1 /* MEDIAN */]) + '	IQR: ' + DRESS.clamp(quartiles1[2 /* IQR */]) + '	SKW: ' + DRESS.clamp(quartiles1[3 /* SKEWNESS */]) + '	KUR: ' + DRESS.clamp(quartiles1[4 /* KURTOSIS */]) + '	vs'
+                        + ' [' + count2 + ']	' + DRESS.clamp(quartiles2[1 /* MEDIAN */]) + '	IQR: ' + DRESS.clamp(quartiles2[2 /* IQR */]) + '	SKW: ' + DRESS.clamp(quartiles2[3 /* SKEWNESS */]) + '	KUR: ' + DRESS.clamp(quartiles2[4 /* KURTOSIS */])
+                        + ' U: ' + DRESS.clamp(U) + '	z: ' + DRESS.signed(DRESS.clamp(z)) + '	p: ' + DRESS.clamp(p)
                 };
             }
             return {
                 feature: feature,
-                count: count1,
-                median: median1,
-                iqr: iqr1,
+                count: quartiles1[0 /* COUNT */],
+                median: quartiles1[1 /* MEDIAN */],
+                iqr: quartiles1[2 /* IQR */],
+                skewness: quartiles1[3 /* SKEWNESS */],
+                kurtosis: quartiles1[4 /* KURTOSIS */],
                 count2: null,
                 median2: null,
                 iqr2: null,
+                skewness2: null,
+                kurtosis2: null,
                 z: null,
                 p: null,
-                text: DRESS.padEnd(feature, pad) + ': [' + count1 + ']	' + DRESS.clamp(median1) + '	IQR: ' + DRESS.clamp(iqr1)
+                text: DRESS.padEnd(feature, pad) + ': [' + quartiles1[0 /* COUNT */] + ']	' + DRESS.clamp(quartiles1[1 /* MEDIAN */]) + '	IQR: ' + DRESS.clamp(quartiles1[2 /* IQR */]) + '	SKW: ' + DRESS.clamp(quartiles1[3 /* SKEWNESS */]) + '	KUR: ' + DRESS.clamp(quartiles1[4 /* KURTOSIS */])
             };
         });
     };
@@ -118,16 +143,28 @@ var DRESS;
         const zCI = DRESS.anorm(DRESS.SIGNIFICANCE);
         //
         return features.map(feature => {
-            const cases1 = subjects.filter(subject => DRESS.numeric(DRESS.get(subject, feature)));
+            let cases1 = 0;
             const n1 = subjects.length;
-            const p1 = cases1.length / n1;
+            let i = n1;
+            while (i--) {
+                if (DRESS.numeric(DRESS.get(subjects[i], feature))) {
+                    cases1 += 1;
+                }
+            }
+            const p1 = cases1 / n1;
             const se1 = Math.sqrt(p1 * (1 - p1) / n1);
             const ci1 = [p1 - zCI * se1, p1 + zCI * se1];
             //            
             if (subjects2) {
-                const cases2 = subjects2.filter(subject => DRESS.numeric(DRESS.get(subject, feature)));
+                let cases2 = 0;
                 const n2 = subjects2.length;
-                const p2 = cases2.length / n2;
+                let i = n2;
+                while (i--) {
+                    if (DRESS.numeric(DRESS.get(subjects2[i], feature))) {
+                        cases2 += 1;
+                    }
+                }
+                const p2 = cases2 / n2;
                 const se2 = Math.sqrt(p2 * (1 - p2) / n2);
                 const ci2 = [p2 - zCI * se2, p2 + zCI * se2];
                 //
@@ -136,24 +173,24 @@ var DRESS;
                 const p = DRESS.norm(z);
                 return {
                     feature: feature,
-                    count: cases1.length,
+                    count: cases1,
                     proportion: p1,
                     ci: ci1,
-                    count2: cases2.length,
+                    count2: cases2,
                     proportion2: p2,
                     ci2: ci2,
                     z: z,
                     p: p,
-                    text: DRESS.padEnd(feature, pad) + ': [' + cases1.length + ']	' + DRESS.clamp(p1 * 100) + '%'
+                    text: DRESS.padEnd(feature, pad) + ': [' + cases1 + ']	' + DRESS.clamp(p1 * 100) + '%'
                         + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci1.map(v => DRESS.clamp(v * 100)).join(' - ') + ') vs'
-                        + '	[' + cases2.length + ']	' + DRESS.clamp(p2 * 100) + '%'
+                        + '	[' + cases2 + ']	' + DRESS.clamp(p2 * 100) + '%'
                         + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci2.map(v => DRESS.clamp(v * 100)).join(' - ') + ')'
                         + '	z: ' + DRESS.signed(DRESS.clamp(z)) + '	p: ' + DRESS.clamp(p)
                 };
             }
             return {
                 feature: feature,
-                count: cases1.length,
+                count: cases1,
                 proportion: p1,
                 ci: ci1,
                 count2: null,
@@ -161,7 +198,7 @@ var DRESS;
                 ci2: null,
                 z: null,
                 p: null,
-                text: DRESS.padEnd(feature, pad) + ': [' + cases1.length + ']	' + DRESS.clamp(p1 * 100) + '%'
+                text: DRESS.padEnd(feature, pad) + ': [' + cases1 + ']	' + DRESS.clamp(p1 * 100) + '%'
                     + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci1.map(v => DRESS.clamp(v * 100)).join(' - ') + ')'
             };
         });
@@ -197,13 +234,14 @@ var DRESS;
     DRESS.frequencies = (subjects, features, subjects2 = null, limit = 25) => {
         let count = (subjects, feature) => {
             const counters = new Map();
-            subjects.map(subject => {
-                const value = DRESS.get(subject, feature);
+            let i = subjects.length;
+            while (i--) {
+                const value = DRESS.get(subjects[i], feature);
                 (Array.isArray(value) ? value.filter((value, index, values) => values.indexOf(value) === index) : [value]).map(value => {
                     value = String(value).trim();
                     counters.set(value, (counters.get(value) || 0) + 1);
                 });
-            });
+            }
             return Array.from(counters).sort((a, b) => b[1] - a[1]);
         };
         //
@@ -289,80 +327,95 @@ var DRESS;
      *   count (the number of subjects),
      *   mean (the arithmetic mean of the feature),
      *   sd (the standard deviation of the feature),
+     *   skewness (the Fisher-Pearson coefficient of skewness),
+     *   kurtosis (the excess Kurtosis),
      *   ci (the confidence interval of the mean),
      *   count2 (the number of subjects for the second group of subjects, only applicable if subjects2 is specified),
      *   mean2 (the arithmetic mean of the feature for the second group of subjects, only applicable if subjects2 is specified),
      *   sd2 (the standard deviation of the feature for the second group of subjects, only applicable if subjects2 is specified),
+     *   skewness2 (the Fisher-Pearson coefficient of skewness, only applicable if subjects2 is specified),
+     *   kurtosis2 (the excess Kurtosis, only applicable if subjects2 is specified),
      *   ci2 (the confidence interval of the mean for the second group of subjects, only applicable if subjects2 is specified),
      *   z (z score, only applicable if subjects2 is specified),
      *   p (p value, only applicable if subjects2 is specified),
      *   text.
      */
     DRESS.means = (subjects, features, subjects2 = null) => {
+        let moments = (subjects, feature) => {
+            const numSubject = subjects.length;
+            let m1 = 0;
+            let m2 = 0;
+            let m3 = 0;
+            let m4 = 0;
+            for (let i = 0; i < numSubject; i++) {
+                const num = DRESS.numeric(DRESS.get(subjects[i], feature));
+                const n = i + 1;
+                const delta = (num - m1);
+                const delta_n = delta / n;
+                const delta_n2 = delta_n * delta_n;
+                const term = delta * delta_n * i;
+                m1 += delta_n;
+                m4 += term * delta_n2 * (n * n - 3 * n + 3) + 6 * delta_n2 * m2 - 4 * delta_n * m3;
+                m3 += term * delta_n * (n - 2) - 3 * delta_n * m2;
+                m2 += term;
+            }
+            return [numSubject, m1, m2 / numSubject, Math.sqrt(numSubject) * m3 / (Math.pow(m2, 1.5)), numSubject * m4 / (m2 * m2) - 3, Math.sqrt(m2) / numSubject];
+        };
+        //
         const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
         const zCI = DRESS.anorm(DRESS.SIGNIFICANCE);
         //
         return features.map(feature => {
-            const count1 = subjects.length;
-            let mean1 = 0;
-            let sd1 = 0;
-            subjects.map((subject, index) => {
-                const num = DRESS.numeric(DRESS.get(subject, feature));
-                const delta = (num - mean1);
-                mean1 += delta / (index + 1);
-                sd1 += delta * (num - mean1);
-            });
-            sd1 = Math.sqrt(sd1 / count1);
-            const ci1 = [mean1 - zCI * sd1 / Math.sqrt(count1), mean1 + zCI * sd1 / Math.sqrt(count1)];
+            const moments1 = moments(subjects, feature);
+            const ci1 = [moments1[1 /* MEAN */] - zCI * moments1[5 /* ERROR */], moments1[1 /* MEAN */] + zCI * moments1[5 /* ERROR */]];
             //
             if (subjects2) {
-                const count2 = subjects2.length;
-                let mean2 = 0;
-                let sd2 = 0;
-                subjects2.map((subject, index) => {
-                    const num = DRESS.numeric(DRESS.get(subject, feature));
-                    const delta = (num - mean2);
-                    mean2 += delta / (index + 1);
-                    sd2 += delta * (num - mean2);
-                });
-                sd2 = Math.sqrt(sd2 / count2);
-                const ci2 = [mean2 - zCI * sd2 / Math.sqrt(count2), mean2 + zCI * sd2 / Math.sqrt(count2)];
+                const moments2 = moments(subjects2, feature);
+                const ci2 = [moments2[1 /* MEAN */] - zCI * moments2[5 /* ERROR */], moments2[1 /* MEAN */] + zCI * moments2[5 /* ERROR */]];
                 //      
-                const z = (mean1 - mean2) / Math.sqrt(sd1 * sd1 / count1 + sd2 * sd2 / count2);
+                const z = (moments1[1 /* MEAN */] - moments2[1 /* MEAN */]) / Math.sqrt(moments1[2 /* VARIANCE */] / moments1[0 /* COUNT */] + moments2[2 /* VARIANCE */] / moments2[0 /* COUNT */]);
                 const p = DRESS.norm(z);
                 return {
                     feature: feature,
-                    count: count1,
-                    mean: mean1,
-                    sd: sd1,
+                    count: moments1[0 /* COUNT */],
+                    mean: moments1[1 /* MEAN */],
+                    sd: Math.sqrt(moments1[2 /* VARIANCE */]),
+                    skewness: moments1[3 /* SKEWNESS */],
+                    kurtosis: moments1[4 /* KURTOSIS */],
                     ci: ci1,
-                    count2: count2,
-                    mean2: mean2,
-                    sd2: sd2,
+                    count2: moments2[0 /* COUNT */],
+                    mean2: moments2[1 /* MEAN */],
+                    sd2: Math.sqrt(moments2[2 /* VARIANCE */]),
                     ci2: ci2,
+                    skewness2: moments2[3 /* SKEWNESS */],
+                    kurtosis2: moments2[4 /* KURTOSIS */],
                     z: z,
                     p: p,
-                    text: DRESS.padEnd(feature, pad) + ': [' + count1 + ']	' + DRESS.clamp(mean1)
-                        + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci1.map(v => DRESS.clamp(v)).join(' - ') + ')	SD: ' + DRESS.clamp(sd1) + '	vs'
-                        + ' [' + count2 + ']	' + DRESS.clamp(mean2)
-                        + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci2.map(v => DRESS.clamp(v)).join(' - ') + ')	SD: ' + DRESS.clamp(sd2)
+                    text: DRESS.padEnd(feature, pad) + ': [' + moments1[0 /* COUNT */] + ']	' + DRESS.clamp(moments1[1 /* MEAN */])
+                        + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci1.map(v => DRESS.clamp(v)).join(' - ') + ')	SD: ' + DRESS.clamp(Math.sqrt(moments1[2 /* VARIANCE */])) + '	SKW: ' + DRESS.clamp(moments1[3 /* SKEWNESS */]) + '	KUR: ' + DRESS.clamp(moments1[4 /* KURTOSIS */]) + '	vs'
+                        + ' [' + moments2[0 /* COUNT */] + ']	' + DRESS.clamp(moments2[1 /* MEAN */])
+                        + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci2.map(v => DRESS.clamp(v)).join(' - ') + ')	SD: ' + DRESS.clamp(Math.sqrt(moments2[2 /* VARIANCE */])) + '	SKW: ' + DRESS.clamp(moments2[3 /* SKEWNESS */]) + '	KUR: ' + DRESS.clamp(moments2[4 /* KURTOSIS */])
                         + '	z: ' + DRESS.signed(DRESS.clamp(z)) + '	p: ' + DRESS.clamp(p)
                 };
             }
             return {
                 feature: feature,
-                count: count1,
-                mean: mean1,
-                sd: sd1,
+                count: moments1[0 /* COUNT */],
+                mean: moments1[1 /* MEAN */],
+                sd: Math.sqrt(moments1[2 /* VARIANCE */]),
+                skewness: moments1[3 /* SKEWNESS */],
+                kurtosis: moments1[4 /* KURTOSIS */],
                 ci: ci1,
                 count2: null,
                 mean2: null,
                 sd2: null,
+                skewness2: null,
+                kurtosis2: null,
                 ci2: null,
                 z: null,
                 p: null,
-                text: DRESS.padEnd(feature, pad) + ': [' + count1 + ']	' + DRESS.clamp(mean1)
-                    + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci1.map(v => DRESS.clamp(v)).join(' - ') + ')	SD: ' + DRESS.clamp(sd1)
+                text: DRESS.padEnd(feature, pad) + ': [' + moments1[0 /* COUNT */] + ']	' + DRESS.clamp(moments1[1 /* MEAN */])
+                    + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci1.map(v => DRESS.clamp(v)).join(' - ') + ')	SD: ' + DRESS.clamp(Math.sqrt(moments1[2 /* VARIANCE */])) + '	SKW: ' + DRESS.clamp(moments1[3 /* SKEWNESS */]) + '	KUR: ' + DRESS.clamp(moments1[4 /* KURTOSIS */])
             };
         });
     };

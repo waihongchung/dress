@@ -98,6 +98,18 @@ var DRESS;
     /**
      * @ignore
      */
+    DRESS.snorm = (z) => {
+        return (z < 0) ? ((z < -10) ? 0 : DRESS.chiSq(z * z, 1) / 2) : ((10 < z) ? 1 : 1 - DRESS.chiSq(z * z, 1) / 2);
+    };
+    /**
+     * @ignore
+     */
+    DRESS.asnorm = (p) => {
+        return (0 === p) ? 0.5 : (0.5 < p) ? Math.sqrt(DRESS.achiSq(2 * (1 - p), 1)) : -Math.sqrt(DRESS.achiSq(2 * p, 1));
+    };
+    /**
+     * @ignore
+     */
     DRESS.fdist = (f, n1, n2) => {
         let loop = (e, t, n, r) => {
             let i = 1;
@@ -267,6 +279,23 @@ var DRESS;
     /**
      * @ignore
      */
+    DRESS.variance = (values) => {
+        const count = values.length;
+        if (count === 0) {
+            return null;
+        }
+        let mean = 0;
+        let variance = 0;
+        for (let i = 0; i < count; i++) {
+            const delta = values[i] - mean;
+            mean += delta / (i + 1);
+            variance += delta * (values[i] - mean);
+        }
+        return variance / count;
+    };
+    /**
+     * @ignore
+     */
     DRESS.sum = (values) => {
         let sum = 0;
         let i = values.length;
@@ -366,5 +395,112 @@ var DRESS;
             rmse,
             text: 'r2: ' + DRESS.clamp(r2) + '	mae: ' + DRESS.clamp(mae) + '	rmse: ' + DRESS.clamp(rmse)
         };
+    };
+    /**
+     * @ignore
+     */
+    DRESS.root = (f, x0, x1) => {
+        const ZERO = 1 / (Math.pow(10, (DRESS.PRECISION + 3)));
+        let y0 = f(x0);
+        let y1 = f(x1);
+        let x;
+        while (Math.abs(x1 - x0) > ZERO) {
+            const x2 = (x0 + x1) / 2;
+            const y2 = f(x2);
+            x = x2 + (x2 - x0) * ((y0 > y1) ? 1 : -1) * y2 / Math.sqrt(Math.pow(y2, 2) - y0 * y1);
+            const y = f(x);
+            if (y * y2 < 0) {
+                x0 = x2;
+                y0 = y2;
+                x1 = x;
+                y1 = y;
+            }
+            else if (y * y1 < 1) {
+                x0 = x;
+                y0 = y;
+            }
+            else {
+                x1 = x;
+                y1 = y;
+            }
+        }
+        return x;
+    };
+    /**
+     * @ignore
+     */
+    DRESS.minima = (f, a, b) => {
+        const ZERO = 1 / (Math.pow(10, (DRESS.PRECISION + 3)));
+        const GOLDEN = 0.381966011250105097;
+        let x0 = a + GOLDEN * (b - a);
+        let f0 = f(x0);
+        let x1 = x0;
+        let x2 = x1;
+        let f1 = f0;
+        let f2 = f1;
+        let d = 0;
+        let e = 0;
+        while (Math.abs(b - a) > ZERO) {
+            const m = (a + b) / 2;
+            let r = 0;
+            let q = 0;
+            let p = 0;
+            if (Math.abs(e) > ZERO) {
+                r = (x0 - x1) * (f0 - f2);
+                q = (x0 - x2) * (f0 - f1);
+                p = (x0 - x2) * q - (x0 - x1) * r;
+                q = (q - r) * 2;
+                if (q > 0) {
+                    p = -p;
+                }
+                else {
+                    q = -q;
+                }
+                r = e;
+                e = d;
+            }
+            if ((Math.abs(q * r * 0.5) > Math.abs(p)) && (p > (q * (a - x0))) && (p < (q * (b - x0)))) {
+                d = p / q;
+            }
+            else {
+                e = (x0 < m) ? b - x0 : a - x0;
+                d = GOLDEN * e;
+            }
+            const u = x0 + d;
+            const fu = f(u);
+            if (fu <= f0) {
+                if (u < x0) {
+                    b = x0;
+                }
+                else {
+                    a = x0;
+                }
+                x2 = x1;
+                f2 = f1;
+                x1 = x0;
+                f1 = f0;
+                x0 = u;
+                f0 = fu;
+            }
+            else {
+                if (u < x0) {
+                    a = u;
+                }
+                else {
+                    b = u;
+                }
+                if ((fu <= f1) || (x1 === x0)) {
+                    x2 = x1;
+                    f2 = f1;
+                    x1 = u;
+                    f1 = fu;
+                }
+                else if ((fu <= f2) || (x2 === x0) || (x2 === x1)) {
+                    x2 = u;
+                    f2 = fu;
+                }
+            }
+        }
+        return x0;
     };
 })(DRESS || (DRESS = {}));
