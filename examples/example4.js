@@ -8,7 +8,7 @@ function processJSON(subjects) {
 
     DRESS.print('<b>Sorting</b>');
     DRESS.print(
-        DRESS.sort(subjects, ['Age', 'BMI', 'HA1C'])
+        DRESS.sort(subjects, ['Age', 'BMI', 'HA1C'], [false, false, true])
 
     );
 

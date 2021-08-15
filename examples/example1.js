@@ -11,6 +11,7 @@ function processJSON(subjects) {
     // Stratify population into two groups by gender.
     var males = subjects.filter(subject => subject['Gender'] === 'M');
     var females = subjects.filter(subject => subject['Gender'] !== 'M');
+
     DRESS.print('<b>Male vs Female</b>');
     DRESS.print(
         DRESS.means(males, ['Age', 'BMI', 'Disease Duration', 'HA1C'], females),

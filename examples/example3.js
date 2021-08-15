@@ -1,12 +1,12 @@
 function processJSON(subjects) {
     // Transform Data
-    DRESS.booleanize(subjects, 'Gender', ['M'], 'Male');
-    DRESS.booleanize(subjects, 'Etiology', ['Diabetic'], 'Diabetic Gastroparesis');
-    DRESS.booleanize(subjects, 'Comorbidities', ['Hypertension'], 'Hypertension');
-    DRESS.booleanize(subjects, 'Comorbidities', ['Diabetes'], 'Diabetes');
-    DRESS.booleanize(subjects, 'Comorbidities', ['GERD'], 'GERD');
-    DRESS.booleanize(subjects, 'Smoking', ['Former', 'Current']);
-    DRESS.booleanize(subjects, 'Alcohol', ['Former', 'Frequent']);
+    DRESS.booleanize(subjects, ['Gender'], ['M'], ['Male']);
+    DRESS.booleanize(subjects, ['Etiology'], ['Diabetic'], ['Diabetic Gastroparesis']);
+    DRESS.booleanize(subjects, ['Comorbidities'], ['Hypertension'], ['Hypertension']);
+    DRESS.booleanize(subjects, ['Comorbidities'], ['Diabetes'], ['Diabetes']);
+    DRESS.booleanize(subjects, ['Comorbidities'], ['GERD'], ['GERD']);
+    DRESS.booleanize(subjects, ['Smoking'], ['Former', 'Current']);
+    DRESS.booleanize(subjects, ['Alcohol'], ['Former', 'Frequent']);
     //
 
     DRESS.print('<b>Odds Ratio</b>');

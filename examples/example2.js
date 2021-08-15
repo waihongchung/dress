@@ -12,20 +12,20 @@ function processJSON(subjects) {
     DRESS.print('<b>Booleanize</b>');
     DRESS.print(
         // Label gender M as male
-        DRESS.booleanize(subjects, 'Gender', ['M'], 'Male'),
+        DRESS.booleanize(subjects, ['Gender'], ['M'], 'Male'),
         // Label any subject with hypertension as a comorbidities as hypertension        
-        DRESS.booleanize(subjects, 'Comorbidities', ['Hypertension'], 'Hypertension'),
+        DRESS.booleanize(subjects, ['Comorbidities'], ['Hypertension'], 'Hypertension'),
         // Label any subject with current and past smoking history as smokers        
-        DRESS.booleanize(subjects, 'Smoking', ['Former', 'Current']),
+        DRESS.booleanize(subjects, ['Smoking'], ['Former', 'Current']),
     );
 
     // Categorize Data
     DRESS.print('<b>Categorize</b>');
     DRESS.print(
         // Label diabetic etiology as 0, idiopathic and surgical etiologies as 1.
-        DRESS.categorize(subjects, 'Etiology', ['Diabetic', ['Idiopathic', 'Surgical']]),
+        DRESS.categorize(subjects, ['Etiology'], ['Diabetic', ['Idiopathic', 'Surgical']]),
         // Label rare alcohol use as 0, social use as 1, and frequent use as 2.        
-        DRESS.categorize(subjects, 'Alcohol', ['Rare', 'Social', 'Frequent']),
+        DRESS.categorize(subjects, ['Alcohol'], ['Rare', 'Social', 'Frequent']),
     );
 
     // Group Data
@@ -36,12 +36,12 @@ function processJSON(subjects) {
     );
 
     // Label each subject with a unique ID
-    subjects = DRESS.id(subjects);
+    subjects = DRESS.uuid(subjects);
 
     // Pluck Data
     DRESS.print('<b>Pluck</b>');
-    var scales = DRESS.pluck(subjects, 'Scales', 'subject');
-    var medications = DRESS.pluck(subjects, 'Medications', 'subject');
+    var scales = DRESS.pluck(subjects, ['Scales'], 'subject');
+    var medications = DRESS.pluck(subjects, ['Medications'], 'subject');
     DRESS.print(
         DRESS.means(scales, ['Nausea', 'Pain', 'QoL', 'subject.Age', 'subject.BMI']),
         DRESS.proportions(medications, ['PPI', 'Erythromycin', 'Metoclopramide']),
@@ -49,7 +49,7 @@ function processJSON(subjects) {
 
     // Merge Data
     DRESS.print('<b>Merge</b>');
-    var merged = DRESS.merge('subject.id', scales, medications);    
+    var merged = DRESS.merge('subject.uuid', scales, medications);    
     DRESS.print(
         DRESS.means(merged, ['Nausea', 'Pain', 'QoL']),
         DRESS.proportions(merged, ['PPI', 'Erythromycin', 'Metoclopramide'])
