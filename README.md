@@ -54,8 +54,8 @@ The DRESS Kit is written in plain ES6 JavaScript. Decision is made, however, to 
 - `dress-transform.js` contains methods for data transformation.
 	- `DRESS.normalize` - Normalize the specified features so that their values fall in the range of [0, 1].
 	- `DRESS.standardize` - Standardize the specified features so that their values have an arithmetic mean of 0 and a standard deviation of 1.
-	- `DRESS.booleanize` - Reduce the values of the specified feature into a boolean value (i.e. true or false).
-	- `DRESS.categorize` - Categorize the values of the specified feature and encode the result using numerical values.
+	- `DRESS.booleanize` - Reduce the values of the specified feature into a boolean value (i.e. true or false).	
+	- `DRESS.categorize` - Categorize the values of the specified feature and encode the result using numerical values.	
 	- `DRESS.uuid` - Generate a UUID for each subject.
 	- `DRESS.group` - Organize the subjects into groups based on the specified feature.
 	- `DRESS.merge` - Create a new array of subjects by merging several arrays of subjects based on the values of the specified feature.
@@ -71,6 +71,8 @@ The DRESS Kit is written in plain ES6 JavaScript. Decision is made, however, to 
 - `dress-imputation.js` contains methods for imputing missing values.
 	- `DRESS.meanMode` - Mean/mode imputation.
 	- `DRESS.locf` - Last observation carried forward imputation.	
+	- `DRESS.nullify` - Set the nullable values of the specified features to null.
+	- `DRESS.denullify` - Remove any subjects that contains a null value as one of the specified features.
 
 - `dress-descriptive.js` contains methods for performing descriptive analysis.
 	- `DRESS.proportions` - Calculate the proportion of subjects that a positive outcome, and optionally compare the result to that of a second group of subjects.
@@ -88,6 +90,10 @@ The DRESS Kit is written in plain ES6 JavaScript. Decision is made, however, to 
 	- `DRESS.logistic` - Multiple logistic regressions.
 	- `DRESS.linear` - Multiple linear regressions.
 	- `DRESS.polynomial` - Simple polynomial regression.
+
+- `dress-visualization.js` contains methods for visualizing data structures.
+	- `DRESS.histograms` - Generate ASCII histograms.
+	- `DRESS.heatmap` - Generate a heatmap from a correlation matrix.
 
 - `dress-matching.js` contains methods for matching samples with controls.
 	- `DRESS.exact` - Perform exact matching.
