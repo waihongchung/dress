@@ -15,6 +15,7 @@ declare namespace DRESS {
      * @param {number} [cutoff=1.5] - Optional, the distance of the whiskers. Default to 1.5 times the interquartile range.
      * @returns {object[]} An array of result objects, each with the following parameters:
      *   feature (the feature being evaluated),
+     *   count (the number of non-null values),
      *   quartiles (minimum, first quartile, median, third quartile, and maximum),
      *   whiskers (lower and upper whiskers),
      *   outliers (an array of outliers),
@@ -22,6 +23,7 @@ declare namespace DRESS {
      */
     let boxplot: (subjects: object[], features: string[], nullify?: boolean, cutoff?: number) => {
         feature: string;
+        count: number;
         quartiles: number[];
         whiskers: number[];
         outliers: any[];
@@ -42,11 +44,13 @@ declare namespace DRESS {
      * @param {boolean} [nullify=false] - Optional, set outliers to null. Default to false.
      * @returns {object[]} An array of result objects, each with the following parameters:
      *   feature (the feature being evaluated),
+     *   count (the number of non-null values),
      *   outliers (an array of outliers),
      *   text.
      */
     let grubbs: (subjects: object[], features: string[], nullify?: boolean) => {
         feature: string;
+        count: number;
         outliers: any[];
         p: number;
         text: string;

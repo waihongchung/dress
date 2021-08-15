@@ -54,34 +54,34 @@ declare namespace DRESS {
         text: string;
     }[];
     /**
-     * @summary Reduce the values of the specified feature into a boolean value (i.e. true or false).
+     * @summary Reduce the values of the specified features into a boolean value (i.e. true or false).
      *
-     * @description This method evaluates the value of the specified feature in each subject.
+     * @description This method evaluates the value of the specified features in each subject.
      * Each feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then logical TRUE is defined as the presence of one or more values within the truths array within the property array.
      * Otherwise, the logical TRUE is defined as the presence of the property value within the truths array.
      *
      * NOTE: By default, this method is destructive and directly alters the values of the specified feature. To store the transformed results in a different property, the name parameter must be specified.
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string} feature - A feature to be processed.
+     * @param {string[]} features - An array of features to be processed.
      * @param {any[]} truths - A list of values that are considered as logical TRUE.
-     * @param {string} [name=null] - A property name to be used to store the results.
-     * @returns {object} An object containing the following transformation parameters for debugging purposes:
+     * @param {string[]} [names=null] - An array of property names to be used to store the results. It MUST be of the same length as the features array.
+     * @returns {object[]} An array of transformation parameters for debugging purposes. For each transformed feature, the following parameters are returned:
      *   feature (the feature transformed),
      *   name (the name of property that store the transformed values),
      *   count (the number of subjects that were considered as logical TRUE),
      *   text
      */
-    let booleanize: (subjects: object[], feature: string, truths: any[], name?: string) => {
+    let booleanize: (subjects: object[], features: string[], truths: any[], names?: string[]) => {
         feature: string;
         name: string;
         count: number;
         text: string;
-    };
+    }[];
     /**
-     * @summary Categorize the values of the specified feature and encode the result using numerical values.
+     * @summary Categorize the values of the specified features and encode the result using numerical values.
      *
-     * @description This method categorizes the value of the specified feature in each subject by matching it to one of the specified categories.
+     * @description This method categorizes the value of the specified features in each subject by matching it to one of the specified categories.
      * Each feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then each value in the property is matched individually, and an empty array is returned if no match is found.
      * If the property is NOT an array, then the value is matched directly against the specified categories. If no match is found, then the property is set to null.
      *
@@ -90,21 +90,21 @@ declare namespace DRESS {
      * NOTE: By default, this method is destructive and directly alters the values of the specified feature. To store the transformed results in a different property, the name parameter must be specified.
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string} feature - A feature to be processed.
+     * @param {string[]} features - An array of features to be processed.
      * @param {any[]} categories - An array of categories. The index of each category is used for encoding.
-     * @param {string} [name=null] - A property name to be used to store the results.
-     * @returns {object} An object containing the following transformation parameters for debugging purposes:
+     * @param {string[]} [names=null] - An array of property names to be used to store the results. It MUST be of the same length as the features array.
+     * @returns {object[]} An array of transformation parameters for debugging purposes. For each transformed feature, the following parameters are returned:
      *   feature (the feature transformed),
      *   name (the name of property that store the transformed values),
      *   counts (an array representing the number of matched subjects in each category).
      *   text
      */
-    let categorize: (subjects: object[], feature: string, categories: any[], name?: string) => {
+    let categorize: (subjects: object[], features: string[], categories: any[], names?: string[]) => {
         feature: string;
         name: string;
         counts: number[];
         text: string;
-    };
+    }[];
     /**
      * @summary Generate a UUID for each subject.
      *
@@ -154,8 +154,8 @@ declare namespace DRESS {
      * The feature should be a property of the subject or is accessible using the dot notation.
      *
      * Suppose there is an array of study subjects, each suject has a feature called 'encounters', which is an array of hospital encounters associated with the subject.
-     * You can create a new array of encounters, by calling pluck(subjects, 'encounters'). You can optionally create, as a property of each encounter object, a back reference, called 'subject' to the parent subject, by calling
-     * pluck(subjects, 'encounters', 'subject').
+     * You can create a new array of encounters, by calling pluck(subjects, ['encounters']). You can optionally create, as a property of each encounter object, a back reference, called 'subject' to the parent subject, by calling
+     * pluck(subjects, ['encounters'], 'subject').
      *
      * @param {object[]} subjects - The subjects to be processed.
      * @param {string[]} features - One or more features to be selected.

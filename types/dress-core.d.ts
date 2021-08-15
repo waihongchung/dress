@@ -38,6 +38,14 @@ declare namespace DRESS {
     /**
      * @ignore
      */
+    let snorm: (z: number) => number;
+    /**
+     * @ignore
+     */
+    let asnorm: (p: number) => number;
+    /**
+     * @ignore
+     */
     let fdist: (f: number, n1: number, n2: number) => number;
     /**
      * @ignore
@@ -94,6 +102,10 @@ declare namespace DRESS {
     /**
      * @ignore
      */
+    let variance: (values: number[]) => number;
+    /**
+     * @ignore
+     */
     let sum: (values: number[]) => number;
     /**
      * @ignore
@@ -121,4 +133,12 @@ declare namespace DRESS {
         rmse: number;
         text: string;
     };
+    /**
+     * @ignore
+     */
+    let root: (f: (x: number) => number, x0: number, x1: number) => number;
+    /**
+     * @ignore
+     */
+    let minima: (f: (x: number) => number, a: number, b: number) => number;
 }

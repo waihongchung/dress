@@ -16,9 +16,13 @@ declare namespace DRESS {
      *   count (the number of subjects),
      *   median (the median value),
      *   iqr (the interquartile range, which equals to the value of the 75th percentile minus that of the 25th percentile),
+     *   skewness (the Galton skewness),
+     *   kurtosis (the excess percentile kurtosis),
      *   count2 (the number of subjects for the second group of subjects, only applicable if subjects2 is specified),
      *   median2 (the median values for the second group of subjects, only applicable if subjects2 is specified),
      *   iqr2 (the interquartile range for the second group of subjects, only applicable if subjects2 is specified),
+     *   skewness2 (the Galton skewness for the second group of subjects, only applicable if subjects2 is specified),
+     *   kurtosis2 (the excess percentile kurtosis for the second group of subjects, only applicable if subjects2 is specified),
      *   z (z score, only applicable if subjects2 is specified),
      *   p (p value, only applicable if subjects2 is specified),
      *   text.
@@ -28,9 +32,13 @@ declare namespace DRESS {
         count: number;
         median: number;
         iqr: number;
+        skewness: number;
+        kurtosis: number;
         count2: number;
         median2: number;
         iqr2: number;
+        skewness2: number;
+        kurtosis2: number;
         z: number;
         p: number;
         text: string;
@@ -130,10 +138,14 @@ declare namespace DRESS {
      *   count (the number of subjects),
      *   mean (the arithmetic mean of the feature),
      *   sd (the standard deviation of the feature),
+     *   skewness (the Fisher-Pearson coefficient of skewness),
+     *   kurtosis (the excess Kurtosis),
      *   ci (the confidence interval of the mean),
      *   count2 (the number of subjects for the second group of subjects, only applicable if subjects2 is specified),
      *   mean2 (the arithmetic mean of the feature for the second group of subjects, only applicable if subjects2 is specified),
      *   sd2 (the standard deviation of the feature for the second group of subjects, only applicable if subjects2 is specified),
+     *   skewness2 (the Fisher-Pearson coefficient of skewness, only applicable if subjects2 is specified),
+     *   kurtosis2 (the excess Kurtosis, only applicable if subjects2 is specified),
      *   ci2 (the confidence interval of the mean for the second group of subjects, only applicable if subjects2 is specified),
      *   z (z score, only applicable if subjects2 is specified),
      *   p (p value, only applicable if subjects2 is specified),
@@ -144,11 +156,15 @@ declare namespace DRESS {
         count: number;
         mean: number;
         sd: number;
+        skewness: number;
+        kurtosis: number;
         ci: number[];
         count2: number;
         mean2: number;
         sd2: number;
         ci2: number[];
+        skewness2: number;
+        kurtosis2: number;
         z: number;
         p: number;
         text: string;
