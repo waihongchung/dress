@@ -9,8 +9,7 @@ function processJSON(subjects) {
     });
     DRESS.print('<b>Mean Mode Imputation</b>');
     DRESS.print(
-        DRESS.meanMode(subjects, ['Age', 'BMI', 'HA1C'], false),
-        DRESS.meanMode(subjects, ['Smoking', 'Etiology'], true)
+        DRESS.meanMode(subjects, ['Age', 'BMI', 'HA1C'], ['Smoking', 'Etiology'])        
     );
 
     // Randomly set value to null
