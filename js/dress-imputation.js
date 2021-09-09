@@ -9,19 +9,25 @@ var DRESS;
      * NOTE: By default, this method is destructive and directly alters the values of the specified feature.
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string[]} features - An array of features to be processed.
-     * @param {boolean} [categorical=false] - Treat features as categorical features. Default to false.
+     * @param {string[]} numericals - An array of numerical features to be processed.
+     * @param {string[]} categoricals - An array of categorical features to be processed.
      * @returns {object[]} An array of imputation parameters for debugging purposes. For each imputed feature, the following parameters are returned:
      *   feature (the feature imputed),
      *   count (the number of missing values),
      *   value (the mean or mode used as replacement),
      *   text
      */
-    DRESS.meanMode = (subjects, features, categorical = false) => {
+    DRESS.meanMode = (subjects, numericals, categoricals) => {
+        numericals || (numericals = []);
+        categoricals || (categoricals = []);
+        const features = numericals.concat(categoricals);
+        const numNumerical = numericals.length;
+        //
         const numSubject = subjects.length;
         const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
         //
-        return features.map(feature => {
+        return features.map((feature, index) => {
+            const isNumeric = index < numNumerical;
             let values = new Array(numSubject);
             const nulls = new Array();
             let count = 0;
@@ -32,17 +38,17 @@ var DRESS;
                     nulls.push(subjects[i]);
                 }
                 else {
-                    values[count++] = categorical ? DRESS.categoric(value) : DRESS.numeric(value);
+                    values[count++] = isNumeric ? DRESS.numeric(value) : DRESS.categoric(value);
                 }
             }
             values = values.slice(0, count);
-            const value = categorical ? DRESS.mode(values) : DRESS.mean(values);
+            const value = isNumeric ? DRESS.mean(values) : DRESS.mode(values);
             nulls.map(subject => DRESS.set(subject, feature, value));
             count = numSubject - count;
             return {
                 feature,
                 count,
-                text: DRESS.padEnd(feature, pad) + ': ' + count + '	(' + DRESS.clamp(count / numSubject * 100) + '%)' + '	= ' + (categorical ? value : DRESS.clamp(value))
+                text: DRESS.padEnd(feature, pad) + ': ' + count + '	(' + DRESS.clamp(count / numSubject * 100) + '%)' + '	= ' + (isNumeric ? DRESS.clamp(value) : value)
             };
         });
     };

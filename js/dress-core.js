@@ -36,7 +36,16 @@ var DRESS;
     /**
      * @ignore
      */
-    DRESS.chiSq = (z, n) => {
+    DRESS.chi2 = (z, n) => {
+        if ((z > 1000) || (n > 1000)) {
+            const q = DRESS.norm((Math.pow((z / n), (1 / 3)) + 2 / (9 * n) - 1) / Math.sqrt(2 / (9 * n))) / 2;
+            if (z > n) {
+                return q;
+            }
+            else {
+                return 1 - q;
+            }
+        }
         let p = Math.exp(-0.5 * z);
         if (n & 1) {
             p *= Math.sqrt(2 * z / Math.PI);
@@ -57,14 +66,14 @@ var DRESS;
     /**
      * @ignore
      */
-    DRESS.achiSq = (p, n) => {
+    DRESS.achi2 = (p, n) => {
         let v = 0.5;
         let dv = 0.5;
         let z = 0;
         while (dv > 1e-15) {
             z = 1 / v - 1;
             dv /= 2;
-            DRESS.chiSq(z, n) > p ? v -= dv : v += dv;
+            DRESS.chi2(z, n) > p ? v -= dv : v += dv;
         }
         return z;
     };
@@ -78,7 +87,7 @@ var DRESS;
             return (1 - 1 / q + 3 / (q * q)) * Math.exp(-q / 2) / (z * Math.sqrt(Math.PI / 2));
         }
         else {
-            return DRESS.chiSq(q, 1);
+            return DRESS.chi2(q, 1);
         }
     };
     /**
@@ -99,13 +108,13 @@ var DRESS;
      * @ignore
      */
     DRESS.snorm = (z) => {
-        return (z < 0) ? ((z < -10) ? 0 : DRESS.chiSq(z * z, 1) / 2) : ((10 < z) ? 1 : 1 - DRESS.chiSq(z * z, 1) / 2);
+        return (z < 0) ? ((z < -10) ? 0 : DRESS.chi2(z * z, 1) / 2) : ((10 < z) ? 1 : 1 - DRESS.chi2(z * z, 1) / 2);
     };
     /**
      * @ignore
      */
     DRESS.asnorm = (p) => {
-        return (0 === p) ? 0.5 : (0.5 < p) ? Math.sqrt(DRESS.achiSq(2 * (1 - p), 1)) : -Math.sqrt(DRESS.achiSq(2 * p, 1));
+        return (0 === p) ? 0.5 : (0.5 < p) ? Math.sqrt(DRESS.achi2(2 * (1 - p), 1)) : -Math.sqrt(DRESS.achi2(2 * p, 1));
     };
     /**
      * @ignore

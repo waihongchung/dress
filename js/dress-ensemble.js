@@ -318,7 +318,7 @@ var DRESS;
      *   importance (a method for reporting feature importance).
      */
     DRESS.gradientBoosting = (subjects, outcome, numericals, categoricals, classification = true, hyperparameters = {}) => {
-        const minSize = hyperparameters.size || 5;
+        const minSize = hyperparameters.size || (classification ? 1 : 5);
         const maxDepth = hyperparameters.depth || 3;
         const numTree = hyperparameters.trees || (classification ? 50 : 100);
         const samplingRate = hyperparameters.sampling || 0.75;

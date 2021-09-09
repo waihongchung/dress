@@ -35,12 +35,19 @@ var DRESS;
         let X;
         let Y;
         if (Array.isArray(subjects)) {
-            X = new Array(subjects.length);
-            Y = new Array(subjects.length);
-            subjects.map((subject, index) => {
-                X[index] = features.map(feature => DRESS.numeric(DRESS.get(subject, feature)));
-                Y[index] = +outcomes.every(outcome => DRESS.numeric(DRESS.get(subject, outcome)));
-            });
+            const numSubject = subjects.length;
+            const numFeature = features.length;
+            X = new Array(numSubject);
+            Y = new Array(numSubject);
+            let i = numSubject;
+            while (i--) {
+                X[i] = new Array(numFeature);
+                let j = numFeature;
+                while (j--) {
+                    X[i][j] = DRESS.numeric(DRESS.get(subjects[i], features[j]));
+                }
+                Y[i] = +outcomes.every(outcome => DRESS.numeric(DRESS.get(subjects[i], outcome)));
+            }
         }
         else if ((typeof subjects['X'] === 'object') && (typeof subjects['Y'] === 'object')) {
             X = subjects['X'];
@@ -50,7 +57,12 @@ var DRESS;
             X = null;
             Y = null;
         }
-        let model;
+        //
+        let deviance;
+        let r2;
+        let aic;
+        let p;
+        let regressions;
         if (X && Y) {
             const numRow = X.length;
             const numColumn = features.length + 1;
@@ -189,46 +201,52 @@ var DRESS;
             features = ['(intercept)', ...features];
             const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
             const zCI = DRESS.anorm(DRESS.SIGNIFICANCE);
-            const deviance = LLn - LL;
-            const r2 = 1 - (LL / LLn);
-            const aic = LL + 2 * numColumn;
-            const p = DRESS.chiSq(deviance, numColumn - 1);
-            model = {
-                outcomes,
-                deviance,
-                r2,
-                aic,
-                p,
-                features: coefficients.map((coefficient, j) => {
-                    const z = coefficient / SEs[j];
-                    const p = DRESS.norm(z);
-                    const ci = [Math.exp(coefficient - zCI * SEs[j]), Math.exp(coefficient + zCI * SEs[j])];
-                    return {
-                        feature: features[j],
-                        coefficient,
-                        z,
-                        p,
-                        oddsRatio: Math.exp(coefficient),
-                        ci,
-                        text: DRESS.padEnd(features[j], pad) + ': ' + DRESS.signed(DRESS.clamp(coefficient))
-                            + '	OR: ' + DRESS.clamp(Math.exp(coefficient)) + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci.map(v => DRESS.clamp(v)).join(' - ') + ')'
-                            + '	z: ' + DRESS.signed(DRESS.clamp(z)) + '	p: ' + DRESS.clamp(p)
-                    };
-                }),
-                text: '[' + outcomes.join(', ') + ']'
-                    + '	R2: ' + DRESS.clamp(r2) + '	AIC: ' + DRESS.clamp(aic) + '	deviance: ' + DRESS.clamp(deviance) + '	p: ' + DRESS.clamp(p)
-            };
+            //
+            deviance = LLn - LL;
+            r2 = 1 - (LL / LLn);
+            aic = LL + 2 * numColumn;
+            p = DRESS.chi2(deviance, numColumn - 1);
+            regressions = coefficients.map((coefficient, j) => {
+                const z = coefficient / SEs[j];
+                const p = DRESS.norm(z);
+                const ci = [Math.exp(coefficient - zCI * SEs[j]), Math.exp(coefficient + zCI * SEs[j])];
+                return {
+                    feature: features[j],
+                    coefficient,
+                    z,
+                    p,
+                    oddsRatio: Math.exp(coefficient),
+                    ci,
+                    text: DRESS.padEnd(features[j], pad) + ': ' + DRESS.signed(DRESS.clamp(coefficient))
+                        + '	OR: ' + DRESS.clamp(Math.exp(coefficient)) + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci.map(v => DRESS.clamp(v)).join(' - ') + ')'
+                        + '	z: ' + DRESS.signed(DRESS.clamp(z)) + '	p: ' + DRESS.clamp(p)
+                };
+            });
         }
         else {
-            model = subjects;
+            outcomes = subjects['outcomes'] || [];
+            deviance = subjects['deviance'] || 0;
+            r2 = subjects['r2'] || 0;
+            aic = subjects['aic'] || 0;
+            p = subjects['p'] || 1;
+            regressions = subjects['features'] || [];
         }
-        return Object.assign(Object.assign({}, model), { predict(subject) {
+        return {
+            outcomes,
+            deviance,
+            r2,
+            aic,
+            p,
+            features: regressions,
+            text: '[' + outcomes.join(', ') + ']'
+                + '	R2: ' + DRESS.clamp(r2) + '	AIC: ' + DRESS.clamp(aic) + '	deviance: ' + DRESS.clamp(deviance) + '	p: ' + DRESS.clamp(p),
+            predict(subject) {
                 let p = this.features[0].coefficient;
                 let i = this.features.length;
                 while (--i) {
                     p += DRESS.numeric(DRESS.get(subject, this.features[i].feature)) * this.features[i].coefficient;
                 }
-                return p;
+                return 1 / (1 + Math.exp(-p));
             },
             roc(subjects, roc = DRESS.roc) {
                 return roc({
@@ -241,9 +259,10 @@ var DRESS;
             performance(subjects, threshold = 0.5) {
                 return DRESS.accuracies(subjects.map(subject => [
                     +this.outcomes.every(outcome => DRESS.numeric(DRESS.get(subject, outcome))),
-                    (this.predict(subject) > threshold)
+                    +(this.predict(subject) > threshold)
                 ]));
-            } });
+            }
+        };
     };
     /**
      * @summary Multiple linear regressions.
@@ -278,12 +297,19 @@ var DRESS;
         let X;
         let Y;
         if (Array.isArray(subjects)) {
-            X = new Array(subjects.length);
-            Y = new Array(subjects.length);
-            subjects.map((subject, index) => {
-                X[index] = features.map(feature => DRESS.numeric(DRESS.get(subject, feature)));
-                Y[index] = DRESS.numeric(DRESS.get(subject, outcome));
-            });
+            const numSubject = subjects.length;
+            const numFeature = features.length;
+            X = new Array(numSubject);
+            Y = new Array(numSubject);
+            let i = numSubject;
+            while (i--) {
+                X[i] = new Array(numFeature);
+                let j = numFeature;
+                while (j--) {
+                    X[i][j] = DRESS.numeric(DRESS.get(subjects[i], features[j]));
+                }
+                Y[i] = DRESS.numeric(DRESS.get(subjects[i], outcome));
+            }
         }
         else if ((typeof subjects['X'] === 'object') && (typeof subjects['Y'] === 'object')) {
             X = subjects['X'];
@@ -293,30 +319,47 @@ var DRESS;
             X = null;
             Y = null;
         }
-        let model;
+        //
+        let r2;
+        let ar2;
+        let aic;
+        let f;
+        let p;
+        let regressions;
         if (X && Y) {
             X = origin ? X : X.map(Xr => [1, ...Xr]);
             const numRow = X.length;
             const numColumn = features.length + (origin ? 0 : 1);
             //
-            const XT = (new Array(numColumn)).fill(null).map(_ => (new Array(numRow)).fill(0));
-            X.map((Xr, r) => {
-                Xr.map((Xrc, c) => {
-                    XT[c][r] = Xrc;
-                });
-            });
-            //
-            const M = (new Array(numColumn)).fill(null).map(_ => (new Array(numColumn)).fill(0));
-            XT.map((XTr, r) => {
-                XT.map((Xc, c) => {
-                    M[r][c] = XTr.reduce((p, XTrc, c) => p + XTrc * Xc[c], 0);
-                });
-            });
-            //
-            const I = (new Array(numColumn)).fill(null).map(_ => (new Array(numColumn)).fill(0));
-            I.map((Ir, r) => {
-                Ir[r] = 1;
-            });
+            const XT = (new Array(numColumn)).fill(null).map(_ => new Array(numRow));
+            let c;
+            let r = numRow;
+            while (r--) {
+                c = numColumn;
+                while (c--) {
+                    XT[c][r] = X[r][c];
+                }
+            }
+            const M = new Array(numColumn);
+            r = numColumn;
+            while (r--) {
+                M[r] = new Array(numColumn);
+                c = numColumn;
+                while (c--) {
+                    let p = 0;
+                    let i = numRow;
+                    while (i--) {
+                        p += XT[r][i] * XT[c][i];
+                    }
+                    M[r][c] = p;
+                }
+            }
+            const I = new Array(numColumn);
+            r = numColumn;
+            while (r--) {
+                I[r] = (new Array(numColumn)).fill(0);
+                I[r][r] = 1;
+            }
             //
             for (let r = 0; r < numColumn; ++r) {
                 let e = M[r][r];
@@ -351,77 +394,104 @@ var DRESS;
                     }
                 }
             }
-            //
-            I.map((Ir, r) => {
-                X.map((XTc, c) => {
-                    XT[r][c] = Ir.reduce((p, Irc, c) => p + Irc * XTc[c], 0); // n * m
-                });
-            });
-            //
-            const O = XT.reduce((O, XTr) => {
-                O.push(XTr.reduce((p, XTrc, c) => p + XTrc * Y[c], 0));
-                return O;
-            }, []);
-            //
-            const YP = X.reduce((YP, Xr) => {
-                YP.push(Xr.reduce((p, Xrc, c) => p + Xrc * O[c], 0));
-                return YP;
-            }, []);
+            r = numColumn;
+            while (r--) {
+                c = numRow;
+                while (c--) {
+                    let p = 0;
+                    let i = numColumn;
+                    while (i--) {
+                        p += I[r][i] * X[c][i];
+                    }
+                    XT[r][c] = p;
+                }
+            }
+            const O = new Array(numColumn);
+            r = numColumn;
+            while (r--) {
+                let p = 0;
+                c = numRow;
+                while (c--) {
+                    p += XT[r][c] * Y[c];
+                }
+                O[r] = p;
+            }
+            const YP = new Array(numRow);
+            r = numRow;
+            while (r--) {
+                let p = 0;
+                c = numColumn;
+                while (c--) {
+                    p += X[r][c] * O[c];
+                }
+                YP[r] = p;
+            }
             let mean = 0;
-            let SST = 0;
-            let SSE = 0;
-            Y.map((Yr, r) => {
-                const temp = Yr - mean;
-                const error = Yr - YP[r];
-                mean += temp / (r + 1);
-                SST += temp * (Yr - mean);
-                SSE += error * error;
-            });
-            const MSE = SSE / (numRow - numColumn);
-            const f = (SST - SSE) / (numColumn - (origin ? 0 : 1)) / MSE;
-            const r2 = 1 - SSE / SST;
-            const ar2 = 1 - (1 - r2) * (numRow - 1) / (numRow - numColumn);
-            const aic = numRow * Math.log(SSE / numRow) + 2 * numColumn;
-            const p = DRESS.fdist(f, numColumn - (origin ? 0 : 1), numRow - numColumn);
-            const SEs = I.map((Ir, r) => Math.sqrt(Ir[r] * MSE));
+            let sst = 0;
+            let sse = 0;
+            for (r = 0; r < numRow; r++) {
+                const value = Y[r];
+                const delta = value - mean;
+                mean += delta / (r + 1);
+                sst += delta * (value - mean);
+                const error = value - YP[r];
+                sse += error * error;
+            }
+            const mse = sse / (numRow - numColumn);
+            f = (sst - sse) / (numColumn - (origin ? 0 : 1)) / mse;
+            r2 = 1 - sse / sst;
+            ar2 = 1 - (1 - r2) * (numRow - 1) / (numRow - numColumn);
+            aic = numRow * Math.log(sse / numRow) + 2 * numColumn;
+            p = DRESS.fdist(f, numColumn - (origin ? 0 : 1), numRow - numColumn);
+            const SE = new Array(numColumn);
+            r = numColumn;
+            while (r--) {
+                SE[r] = Math.sqrt(I[r][r] * mse);
+            }
             features = ['(intercept)', ...features];
             if (origin) {
                 O.unshift(0);
-                SEs.unshift(1e-8);
+                SE.unshift(1e-8);
             }
             const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
             const zCI = DRESS.atdist(DRESS.SIGNIFICANCE, numRow - numColumn);
             //
-            model = {
-                outcome,
-                r2,
-                ar2,
-                aic,
-                f,
-                p,
-                features: O.map((Or, r) => {
-                    const t = Or / SEs[r];
-                    const p = DRESS.tdist(t, numRow - numColumn);
-                    const ci = [Or - zCI * SEs[r], Or + zCI * SEs[r]];
-                    return {
-                        feature: features[r],
-                        coefficient: Or,
-                        t,
-                        p,
-                        ci,
-                        text: DRESS.padEnd(features[r], pad) + ': ' + DRESS.signed(DRESS.clamp(Or))
-                            + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci.map(v => DRESS.clamp(v)).join(' - ') + ')'
-                            + '	t: ' + DRESS.signed(DRESS.clamp(t)) + '	p: ' + DRESS.clamp(p)
-                    };
-                }),
-                text: '[' + outcome + ']'
-                    + '	R2: ' + DRESS.clamp(r2) + '	aR2: ' + DRESS.clamp(ar2) + '	AIC: ' + DRESS.clamp(aic) + '	F: ' + DRESS.clamp(f) + '	p: ' + DRESS.clamp(p)
-            };
+            regressions = O.map((Or, r) => {
+                const t = Or / SE[r];
+                const p = DRESS.tdist(t, numRow - numColumn);
+                const ci = [Or - zCI * SE[r], Or + zCI * SE[r]];
+                return {
+                    feature: features[r],
+                    coefficient: Or,
+                    t,
+                    p,
+                    ci,
+                    text: DRESS.padEnd(features[r], pad) + ': ' + DRESS.signed(DRESS.clamp(Or))
+                        + '	(' + ((1 - DRESS.SIGNIFICANCE) * 100) + '% CI ' + ci.map(v => DRESS.clamp(v)).join(' - ') + ')'
+                        + '	t: ' + DRESS.signed(DRESS.clamp(t)) + '	p: ' + DRESS.clamp(p)
+                };
+            });
         }
         else {
-            model = subjects;
+            outcome = subjects['outcome'] || '';
+            r2 = subjects['r2'] || 0;
+            ar2 = subjects['ar2'] || 0;
+            aic = subjects['aic'] || 0;
+            f = subjects['f'] || 0;
+            p = subjects['p'] || 0;
+            regressions = subjects['features'] || [];
         }
-        return Object.assign(Object.assign({}, model), { predict(subject) {
+        return {
+            outcome,
+            r2,
+            ar2,
+            aic,
+            f,
+            p,
+            features: regressions,
+            text: '[' + outcome + ']'
+                + '	R2: ' + DRESS.clamp(r2) + '	aR2: ' + DRESS.clamp(ar2) + '	AIC: ' + DRESS.clamp(aic) + '	F: ' + DRESS.clamp(f) + '	p: ' + DRESS.clamp(p),
+            predict(subject) {
                 let p = this.features[0].coefficient;
                 let i = this.features.length;
                 while (--i) {
@@ -434,7 +504,8 @@ var DRESS;
                     DRESS.numeric(DRESS.get(subject, this.outcome)),
                     this.predict(subject)
                 ]));
-            } });
+            }
+        };
     };
     /**
      * @summary Simple polynomial regression.
@@ -470,12 +541,14 @@ var DRESS;
         let X;
         let Y;
         if (Array.isArray(subjects)) {
-            X = new Array(subjects.length);
-            Y = new Array(subjects.length);
-            subjects.map((subject, index) => {
-                X[index] = DRESS.numeric(DRESS.get(subject, feature));
-                Y[index] = DRESS.numeric(DRESS.get(subject, outcome));
-            });
+            const numSubject = subjects.length;
+            X = new Array(numSubject);
+            Y = new Array(numSubject);
+            let i = numSubject;
+            while (i--) {
+                X[i] = DRESS.numeric(DRESS.get(subjects[i], feature));
+                Y[i] = DRESS.numeric(DRESS.get(subjects[i], outcome));
+            }
         }
         else if ((typeof subjects['X'] === 'object') && (typeof subjects['Y'] === 'object')) {
             X = subjects['X'];

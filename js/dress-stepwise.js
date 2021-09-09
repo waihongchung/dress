@@ -57,7 +57,7 @@ var DRESS;
      *
      * @param {any} regression - A regression algorithm, such as DRESS.linear or DRESS.logistic.
      * @param {object[]} subjects - The subjects to be analyzed.
-     * @param {string[]} outcomes - An array of outcomes that defines an event.
+     * @param {string[]} outcomes - An outcome or an array of outcomes that defines an event.
      * @param {string[]} features - An array of features to be analyzed.
      * @param  {...any} rest - Any other parameters to be passed to the regression algorithm.
      * @returns {object} A result object containing the following properties:

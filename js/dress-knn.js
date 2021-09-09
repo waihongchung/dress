@@ -184,20 +184,15 @@ var DRESS;
                 };
             },
             performance(subjects, outcome, classification = true, k = 5) {
-                return {
-                    outcome,
-                    k,
-                    performance: classification ?
-                        DRESS.accuracies(subjects.map(subject => [
-                            DRESS.categoric(DRESS.get(subject, outcome)),
-                            this.predict(subject, outcome, true, k)
-                        ])) :
-                        DRESS.errors(subjects.map(subject => [
-                            DRESS.numeric(DRESS.get(subject, outcome)),
-                            this.predict(subject, outcome, false, k)
-                        ])),
-                    text: '[' + outcome + '] k: ' + k
-                };
+                return classification ?
+                    DRESS.accuracies(subjects.map(subject => [
+                        DRESS.categoric(DRESS.get(subject, outcome)),
+                        this.predict(subject, outcome, true, k)
+                    ])) :
+                    DRESS.errors(subjects.map(subject => [
+                        DRESS.numeric(DRESS.get(subject, outcome)),
+                        this.predict(subject, outcome, false, k)
+                    ]));
             },
             impute(subjects, features, categorical = false, k = 5) {
                 const numNeighbor = this.neighbors.length;
