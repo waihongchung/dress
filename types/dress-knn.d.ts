@@ -40,7 +40,7 @@ declare namespace DRESS {
                 auc: number;
                 ci: number[];
                 z: number;
-                p: number;
+                p: any;
                 cutoff: number;
                 tpr: number;
                 tnr: number;
@@ -58,7 +58,7 @@ declare namespace DRESS {
                     auc: number;
                     ci: number[];
                     z: number;
-                    p: number;
+                    p: any;
                     cutoff: number;
                     tpr: number;
                     tnr: number;
@@ -69,27 +69,22 @@ declare namespace DRESS {
             text: string;
         };
         performance(subjects: object[], outcome: string, classification?: boolean, k?: number): {
-            outcome: string;
-            k: number;
-            performance: {
-                accuracy: number;
-                classes: {
-                    class: string;
-                    prevalence: number;
-                    tpr: number;
-                    tnr: number;
-                    ppv: number;
-                    npv: number;
-                    f1: number;
-                    text: string;
-                }[];
+            accuracy: number;
+            classes: {
+                class: string;
+                prevalence: number;
+                tpr: number;
+                tnr: number;
+                ppv: number;
+                npv: number;
+                f1: number;
                 text: string;
-            } | {
-                r2: number;
-                mae: number;
-                rmse: number;
-                text: string;
-            };
+            }[];
+            text: string;
+        } | {
+            r2: number;
+            mae: number;
+            rmse: number;
             text: string;
         };
         impute(subjects: object[], features: string[], categorical?: boolean, k?: number): {

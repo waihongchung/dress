@@ -35,7 +35,7 @@ declare namespace DRESS {
             auc: number;
             ci: number[];
             z: number;
-            p: number;
+            p: any;
             cutoff: number;
             tpr: number;
             tnr: number;

@@ -46,12 +46,12 @@ declare namespace DRESS {
             text: string;
         }[];
         text: string;
-        predict: (subject: object) => any;
-        roc: (subjects: object[], roc: any) => any;
+        predict(subject: object): number;
+        roc(subjects: object[], roc?: any): any;
         performance(subjects: object[], threshold?: number): {
             accuracy: number;
             classes: {
-                class: any;
+                class: string;
                 prevalence: number;
                 tpr: number;
                 tnr: number;

@@ -40,7 +40,7 @@ declare namespace DRESS {
         skewness2: number;
         kurtosis2: number;
         z: number;
-        p: number;
+        p: any;
         text: string;
     }[];
     /**
@@ -76,7 +76,7 @@ declare namespace DRESS {
         proportion2: number;
         ci2: number[];
         z: number;
-        p: number;
+        p: any;
         text: string;
     }[];
     /**
@@ -166,7 +166,7 @@ declare namespace DRESS {
         skewness2: number;
         kurtosis2: number;
         z: number;
-        p: number;
+        p: any;
         text: string;
     }[];
 }

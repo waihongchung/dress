@@ -8,15 +8,15 @@ declare namespace DRESS {
      * NOTE: By default, this method is destructive and directly alters the values of the specified feature.
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string[]} features - An array of features to be processed.
-     * @param {boolean} [categorical=false] - Treat features as categorical features. Default to false.
+     * @param {string[]} numericals - An array of numerical features to be processed.
+     * @param {string[]} categoricals - An array of categorical features to be processed.
      * @returns {object[]} An array of imputation parameters for debugging purposes. For each imputed feature, the following parameters are returned:
      *   feature (the feature imputed),
      *   count (the number of missing values),
      *   value (the mean or mode used as replacement),
      *   text
      */
-    let meanMode: (subjects: object[], features: string[], categorical?: boolean) => {
+    let meanMode: (subjects: object[], numericals: string[], categoricals: string[]) => {
         feature: string;
         count: number;
         text: string;

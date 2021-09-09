@@ -46,12 +46,12 @@ declare namespace DRESS {
             text: string;
         }[];
         text: string;
-        predict: (subject: object) => any;
-        roc: (subjects: object[], roc: any) => any;
+        predict(subject: object): number;
+        roc(subjects: object[], roc?: any): any;
         performance(subjects: object[], threshold?: number): {
             accuracy: number;
             classes: {
-                class: any;
+                class: string;
                 prevalence: number;
                 tpr: number;
                 tnr: number;
@@ -93,7 +93,7 @@ declare namespace DRESS {
      *      text.
      */
     let linear: (subjects: object | object[], outcome: string, features: string[], origin?: boolean) => {
-        outcomes: string[];
+        outcome: string;
         r2: number;
         ar2: number;
         aic: number;
@@ -108,12 +108,12 @@ declare namespace DRESS {
             text: string;
         }[];
         text: string;
-        predict: (subject: object) => any;
+        predict(subject: object): number;
         performance(subjects: object[]): {
-            text: string;
             r2: number;
             mae: number;
             rmse: number;
+            text: string;
         };
     };
     /**
@@ -147,7 +147,7 @@ declare namespace DRESS {
      *      text.
      */
     let polynomial: (subjects: object | object[], outcome: string, feature: string, degree: number, origin?: boolean) => {
-        outcomes: string[];
+        outcome: string;
         r2: number;
         ar2: number;
         aic: number;
@@ -162,12 +162,12 @@ declare namespace DRESS {
             text: string;
         }[];
         text: string;
-        predict: (subject: object) => any;
+        predict(subject: object): number;
         performance(subjects: object[]): {
-            text: string;
             r2: number;
             mae: number;
             rmse: number;
+            text: string;
         };
     };
 }

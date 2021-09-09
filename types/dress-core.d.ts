@@ -22,15 +22,15 @@ declare namespace DRESS {
     /**
      * @ignore
      */
-    let chiSq: (z: number, n: number) => number;
+    let chi2: (z: number, n: number) => any;
     /**
      * @ignore
      */
-    let achiSq: (p: number, n: number) => number;
+    let achi2: (p: number, n: number) => number;
     /**
      * @ignore
      */
-    let norm: (z: number) => number;
+    let norm: (z: number) => any;
     /**
      * @ignore
      */

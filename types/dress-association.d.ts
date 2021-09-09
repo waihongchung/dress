@@ -41,7 +41,7 @@ declare namespace DRESS {
             oddsRatio: number;
             ci: number[];
             z: number;
-            p: number;
+            p: any;
             text: string;
         }[];
         text: string;
@@ -88,7 +88,7 @@ declare namespace DRESS {
             riskRatio: number;
             ci: number[];
             z: number;
-            p: number;
+            p: any;
             text: string;
         }[];
         text: string;
@@ -132,7 +132,7 @@ declare namespace DRESS {
                 value: number;
                 ci: number[];
                 z: number;
-                p: number;
+                p: any;
                 text: string;
             }[];
             exposure: string;
