@@ -98,7 +98,15 @@ declare namespace DRESS {
     /**
      * @ignore
      */
+    let wmode: (values: any[], weights: number[]) => any;
+    /**
+     * @ignore
+     */
     let mean: (values: number[]) => number;
+    /**
+     * @ignore
+     */
+    let wmean: (values: number[], weights: number[]) => number;
     /**
      * @ignore
      */
@@ -107,6 +115,10 @@ declare namespace DRESS {
      * @ignore
      */
     let sum: (values: number[]) => number;
+    /**
+     * @ignore
+     */
+    let wsum: (values: number[], weights: number[]) => number;
     /**
      * @ignore
      */

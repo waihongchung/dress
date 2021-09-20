@@ -23,7 +23,7 @@ declare namespace DRESS {
      *   impute (a method for performing kNN imputation, accepts an array of subject, an array of features, a categorical/numerical flag, and the k-value as parameters),
      *   match (a method for performing kNN matching with the subjects used to build the model are considered as controls. The method accepts an array of samples, the k-value, and a greed/optimal search flag).
      */
-    let kNN: (subjects: object | object[], numericals: string[], categoricals: string[], normalize?: boolean) => {
+    let kNN: (subjects: object | object[], numericals?: string[], categoricals?: string[], normalize?: boolean) => {
         numericals: string[];
         categoricals: string[];
         numericalScales: [min: number, range: number][];
@@ -31,8 +31,8 @@ declare namespace DRESS {
         neighbors: [subject: object, numericals: number[], categoricals: string[]][];
         text: string;
         nearest(subject: object, k: number): [neighbor: object, distance: number][];
-        predict(subject: object, outcome: string, classification?: boolean, k?: number): any;
-        roc(subjects: object[], outcome: string, k?: number, roc?: (subjects: object | object[], outcomes: string[], classifiers: string[]) => {
+        predict(subject: object, outcome: string, classification?: boolean, k?: number, weighted?: boolean): any;
+        roc(subjects: object[], outcome: string, k?: number, weighted?: boolean, roc?: (subjects: object | object[], outcomes: string[], classifiers: string[]) => {
             outcomes: string[];
             classifiers: {
                 classifier: string;
@@ -48,27 +48,22 @@ declare namespace DRESS {
             }[];
             text: string;
         }): {
-            outcome: string;
-            k: number;
-            classes: {
-                outcomes: string[];
-                classifiers: {
-                    classifier: string;
-                    coordinates: number[][];
-                    auc: number;
-                    ci: number[];
-                    z: number;
-                    p: any;
-                    cutoff: number;
-                    tpr: number;
-                    tnr: number;
-                    text: string;
-                }[];
+            outcomes: string[];
+            classifiers: {
+                classifier: string;
+                coordinates: number[][];
+                auc: number;
+                ci: number[];
+                z: number;
+                p: any;
+                cutoff: number;
+                tpr: number;
+                tnr: number;
                 text: string;
             }[];
             text: string;
-        };
-        performance(subjects: object[], outcome: string, classification?: boolean, k?: number): {
+        }[];
+        performance(subjects: object[], outcome: string, classification?: boolean, k?: number, weighted?: boolean): {
             accuracy: number;
             classes: {
                 class: string;
@@ -87,7 +82,7 @@ declare namespace DRESS {
             rmse: number;
             text: string;
         };
-        impute(subjects: object[], features: string[], categorical?: boolean, k?: number): {
+        impute(subjects: object[], features: string[], categorical?: boolean, k?: number, weighted?: boolean): {
             feature: string;
             count: number;
             text: string;

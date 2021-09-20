@@ -47,7 +47,37 @@ declare namespace DRESS {
         }[];
         text: string;
         predict(subject: object): number;
-        roc(subjects: object[], roc?: any): any;
+        roc(subjects: object[], roc?: (subjects: object | object[], outcomes: string[], classifiers: string[]) => {
+            outcomes: string[];
+            classifiers: {
+                classifier: string;
+                coordinates: number[][];
+                auc: number;
+                ci: number[];
+                z: number;
+                p: any;
+                cutoff: number;
+                tpr: number;
+                tnr: number;
+                text: string;
+            }[];
+            text: string;
+        }): {
+            outcomes: string[];
+            classifiers: {
+                classifier: string;
+                coordinates: number[][];
+                auc: number;
+                ci: number[];
+                z: number;
+                p: any;
+                cutoff: number;
+                tpr: number;
+                tnr: number;
+                text: string;
+            }[];
+            text: string;
+        };
         performance(subjects: object[], threshold?: number): {
             accuracy: number;
             classes: {
