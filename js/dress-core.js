@@ -279,11 +279,34 @@ var DRESS;
     /**
      * @ignore
      */
+    DRESS.wmode = (values, weights) => {
+        if ((values.length === 0) || (values.length !== weights.length)) {
+            return null;
+        }
+        const counts = new Map();
+        let i = values.length;
+        while (i--) {
+            counts.set(values[i], (counts.get(values[i]) || 0) + weights[i]);
+        }
+        return Array.from(counts).sort((a, b) => a[1] - b[1]).pop()[0];
+    };
+    /**
+     * @ignore
+     */
     DRESS.mean = (values) => {
         if (values.length === 0) {
             return null;
         }
         return DRESS.sum(values) / values.length;
+    };
+    /**
+     * @ignore
+     */
+    DRESS.wmean = (values, weights) => {
+        if ((values.length === 0) || (values.length !== weights.length)) {
+            return null;
+        }
+        return DRESS.wsum(values, weights) / DRESS.sum(weights);
     };
     /**
      * @ignore
@@ -310,6 +333,17 @@ var DRESS;
         let i = values.length;
         while (i--) {
             sum += values[i];
+        }
+        return sum;
+    };
+    /**
+     * @ignore
+     */
+    DRESS.wsum = (values, weights) => {
+        let sum = 0;
+        let i = values.length;
+        while (i--) {
+            sum += values[i] * weights[i];
         }
         return sum;
     };
@@ -373,31 +407,24 @@ var DRESS;
      * @ignore
      */
     DRESS.errors = (predictions) => {
+        let mean = 0;
+        let sst = 0;
         let sse = 0;
         let mae = 0;
-        let X = 0;
-        let Y = 0;
-        let X2 = 0;
-        let Y2 = 0;
-        let XY = 0;
-        const numPrediction = predictions.length;
-        for (let i = 0; i < numPrediction; i++) {
-            const x = predictions[i][0];
-            const y = predictions[i][1];
-            const error = Math.abs(x - y);
-            sse += error * error;
+        const length = predictions.length;
+        for (let i = 0; i < length; i++) {
+            const expectation = predictions[i][0];
+            const prediction = predictions[i][1];
+            const delta = expectation - mean;
+            mean += delta / (i + 1);
+            sst += delta * (expectation - mean);
+            const error = Math.abs(expectation - prediction);
             mae += error;
-            //
-            X += x;
-            Y += y;
-            X2 += x * x;
-            Y2 += y * y;
-            XY += x * y;
+            sse += error * error;
         }
-        let r2 = (numPrediction * XY - X * Y) / (Math.sqrt(numPrediction * X2 - X * X) * Math.sqrt(numPrediction * Y2 - Y * Y));
-        r2 *= r2;
-        mae /= numPrediction;
-        const rmse = Math.sqrt(sse / numPrediction);
+        let r2 = 1 - sse / sst;
+        mae /= length;
+        const rmse = Math.sqrt(sse / length);
         return {
             r2,
             mae,

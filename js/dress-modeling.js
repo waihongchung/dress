@@ -6,21 +6,22 @@ var DRESS;
      * @description This method computes the relative importance of each feature by randomly permuting the feature values, which breaks the relationship between the feature and the true outcome.
      * A feature is considered important if the permutation process increases the model error, because in this implies that the model relied on the feature for the prediction.
      *
-     * @param {object[]} subjects - The subjects to be analyzed.
      * @param {any} model - The model to be analyzed. Any regression or classification model that contains the method 'performance' is supported.
-     * @param {number} [permutation=5] - The number of permutations to perform. Default is 5.
+     * @param {object[]} subjects - The subjects to be analyzed.
+     * @param {any[]} parameters - One or more parameters to be passed to the algorithm to 'performance' function of the model.
      * @returns An array of features used by the model. For each feature, the following parameters are returned:
      *   feature (the name of the feature),
      *   mean (the average feature importance).
      *   ci (the confidence interval of the feature importance),
      *   text.
      */
-    DRESS.importance = (subjects, model, permutation = 5) => {
+    DRESS.importance = (model, subjects, ...parameters) => {
+        const numFold = 5;
         const features = (model['features'] || []).concat(model['numericals'] || []).concat(model['categoricals'] || []);
         const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
         const numSubject = subjects.length;
         //        
-        const performance = model.performance(subjects);
+        const performance = model.performance.apply(model, [subjects, ...parameters]);
         const measure = (typeof performance['accuracy'] === 'number') ? 'accuracy' : 'r2';
         const base = performance[measure];
         //
@@ -33,14 +34,14 @@ var DRESS;
                 originals[i] = DRESS.get(subjects[i], feature);
             }
             //
-            const metrics = new Array(permutation);
-            let j = permutation;
+            const metrics = new Array(numFold);
+            let j = numFold;
             while (j--) {
                 i = numSubject;
                 while (i--) {
                     DRESS.set(subjects[i], feature, originals[DRESS.randi(numSubject)]);
                 }
-                metrics[j] = base - model.performance(subjects)[measure];
+                metrics[j] = base - model.performance.apply(model, [subjects, ...parameters])[measure];
             }
             //
             let mean = 0;
@@ -74,7 +75,8 @@ var DRESS;
      *
      * @param {string} algorithm - The name of the algorithm used to create the models.
      * @param {object[]} subjects - The subjects to be analyzed.
-     * @param {any[]} parameters - One or more parameters to be passed to the algorithm to create the models.
+     * @param {any[]} parameters - One or more parameters to be passed to the algorithm to create a model.
+     * @param {any[]} parameters2 - One or more parameters to be passed to the algorithm to 'performance' function of the model.
      * @returns A result object containing the following properties:
      *   seed (the random generate seed),
      *   measure (the statistical measure used to determine a model's performance, either accuracy for classification models or R2 for regression models),
@@ -82,7 +84,7 @@ var DRESS;
      *   ci (the confidence interval of the model performance),
      *   text.
      */
-    DRESS.crossValidate = (algorithm, subjects, ...parameters) => {
+    DRESS.crossValidate = (algorithm, subjects, parameters = [], parameters2 = []) => {
         const seed = DRESS.SEED;
         const numFold = 5;
         //
@@ -104,7 +106,8 @@ var DRESS;
             DRESS.SEED = seed;
             const validation = folds.pop();
             const training = folds.reduce((folds, fold) => folds.concat(fold));
-            const performance = algorithm.apply(null, [training, ...parameters]).performance(validation);
+            const model = algorithm.apply(null, [training, ...parameters]);
+            const performance = model.performance.apply(model, [validation, ...parameters2]);
             measure = (typeof performance['accuracy'] === 'number') ? 'accuracy' : 'r2';
             metrics.push(performance[measure]);
             folds.unshift(validation);

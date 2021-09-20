@@ -56,19 +56,19 @@ var DRESS;
     DRESS.propensity = (subjects, controls, features, k = 1, greedy = true, logistic = DRESS.logistic) => {
         const numSubject = subjects.length;
         const numControl = controls.length;
-        const scores = logistic({
+        const model = logistic({
             X: subjects.concat(controls).map(subject => features.map(feature => DRESS.numeric(DRESS.get(subject, feature)))),
             Y: (new Array(numSubject)).fill(1).concat((new Array(numControl)).fill(0))
-        }, ['propensity'], features).roc(subjects.concat(controls), (roc => roc.predictions));
+        }, ['propensity'], features);
         const subjectScores = new Array(numSubject);
         let i = numSubject;
         while (i--) {
-            subjectScores[i] = [subjects[i], scores[i][1]];
+            subjectScores[i] = [subjects[i], model.predict(subjects[i])];
         }
         const controlScores = new Array(numControl);
         i = numControl;
         while (i--) {
-            controlScores[i] = [controls[i], scores[i + numSubject][1]];
+            controlScores[i] = [controls[i], model.predict(controls[i])];
         }
         subjectScores.sort((a, b) => a[1] - b[1]);
         controlScores.sort((a, b) => a[1] - b[1]);

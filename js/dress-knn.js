@@ -1,6 +1,23 @@
 var DRESS;
 (function (DRESS) {
     /**
+     * @ignore
+     */
+    let argmax = (values) => {
+        const length = values.length;
+        const outputs = new Array(length);
+        let i = length;
+        let max = 0;
+        while (i--) {
+            max += (outputs[i] = Math.exp(values[i]));
+        }
+        i = length;
+        while (i--) {
+            outputs[i] /= max;
+        }
+        return outputs;
+    };
+    /**
      * @summary Build a K-nearest-neighbor Model
      *
      * @description This method builds k-nearest neighbor imputation using a modified algorithm that accepts both numerical and categorical features as classifiers.
@@ -24,7 +41,7 @@ var DRESS;
      *   impute (a method for performing kNN imputation, accepts an array of subject, an array of features, a categorical/numerical flag, and the k-value as parameters),
      *   match (a method for performing kNN matching with the subjects used to build the model are considered as controls. The method accepts an array of samples, the k-value, and a greed/optimal search flag).
      */
-    DRESS.kNN = (subjects, numericals, categoricals, normalize = true) => {
+    DRESS.kNN = (subjects, numericals = [], categoricals = [], normalize = true) => {
         let numericalScales;
         let categoricalScales;
         let neighbors;
@@ -153,63 +170,75 @@ var DRESS;
                 }
                 return nearest;
             },
-            predict(subject, outcome, classification = true, k = 5) {
-                const votes = this.nearest(subject, k).map(near => classification ? DRESS.categoric(DRESS.get(near[0 /* NEIGHBOR */][0 /* SUBJECT */], outcome)) : DRESS.numeric(DRESS.get(near[0 /* NEIGHBOR */][0 /* SUBJECT */], outcome)));
-                return classification ? DRESS.mode(votes) : DRESS.mean(votes);
+            predict(subject, outcome, classification = true, k = 5, weighted = true) {
+                const nears = this.nearest(subject, k);
+                const votes = nears.map(near => classification ? DRESS.categoric(DRESS.get(near[0 /* NEIGHBOR */][0 /* SUBJECT */], outcome)) : DRESS.numeric(DRESS.get(near[0 /* NEIGHBOR */][0 /* SUBJECT */], outcome)));
+                if (!weighted) {
+                    return classification ? DRESS.mode(votes) : DRESS.mean(votes);
+                }
+                const weights = argmax(nears.map(near => -near[1 /* DISTANCE */]));
+                return classification ? DRESS.wmode(votes, weights) : DRESS.wmean(votes, weights);
             },
-            roc(subjects, outcome, k = 5, roc = DRESS.roc) {
+            roc(subjects, outcome, k = 5, weighted = true, roc = DRESS.roc) {
                 const numSubject = subjects.length;
                 const expectations = new Array(numSubject);
                 const votes = new Array(numSubject);
                 const classes = [];
-                subjects.map((subject, index) => {
-                    const value = DRESS.categoric(DRESS.get(subject, outcome));
+                let i = numSubject;
+                while (i--) {
+                    const value = DRESS.categoric(DRESS.get(subjects[i], outcome));
                     if (classes.indexOf(value) === -1) {
                         classes.push(value);
                     }
-                    expectations[index] = value;
-                    votes[index] = this.nearest(subject, k).map(near => DRESS.categoric(DRESS.get(near[0 /* NEIGHBOR */][0 /* SUBJECT */], outcome)));
+                    expectations[i] = value;
+                    const nears = this.nearest(subjects[i], k);
+                    const weights = weighted ? argmax(nears.map(near => -near[1 /* DISTANCE */])) : (new Array(k)).fill(1 / k);
+                    votes[i] = nears.map((near, n) => [DRESS.categoric(DRESS.get(near[0 /* NEIGHBOR */][0 /* SUBJECT */], outcome)), weights[n]]);
+                }
+                return classes.map(cls => {
+                    const predictions = new Array(numSubject);
+                    let i = numSubject;
+                    while (i--) {
+                        predictions[i] = [(expectations[i] === cls) ? 1 : 0, DRESS.sum(votes[i].filter(vote => vote[0] === cls).map(vote => vote[1]))];
+                    }
+                    return roc({ predictions }, [cls], ['kNN']);
                 });
-                return {
-                    outcome,
-                    k,
-                    classes: classes.map(cls => {
-                        const predictions = new Array(numSubject);
-                        expectations.map((expectation, index) => {
-                            predictions[index] = [(expectation === cls) ? 1 : 0, votes[index].filter(vote => vote === cls).length / votes[index].length];
-                        });
-                        return roc({ predictions }, [cls], ['kNN']);
-                    }),
-                    text: '[' + outcome + '] k: ' + k
-                };
             },
-            performance(subjects, outcome, classification = true, k = 5) {
+            performance(subjects, outcome, classification = true, k = 5, weighted = true) {
                 return classification ?
                     DRESS.accuracies(subjects.map(subject => [
                         DRESS.categoric(DRESS.get(subject, outcome)),
-                        this.predict(subject, outcome, true, k)
+                        this.predict(subject, outcome, true, k, weighted)
                     ])) :
                     DRESS.errors(subjects.map(subject => [
                         DRESS.numeric(DRESS.get(subject, outcome)),
-                        this.predict(subject, outcome, false, k)
+                        this.predict(subject, outcome, false, k, weighted)
                     ]));
             },
-            impute(subjects, features, categorical = false, k = 5) {
+            impute(subjects, features, categorical = false, k = 5, weighted = true) {
                 const numNeighbor = this.neighbors.length;
                 const numSubject = subjects.length;
                 const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
                 return features.map(feature => {
                     const nulls = subjects.filter(subject => DRESS.get(subject, feature) === null);
                     nulls.map(subject => {
-                        const neighbors = this.nearest(subject, numNeighbor).map(near => near[0 /* NEIGHBOR */][0 /* SUBJECT */]);
+                        const nears = this.nearest(subject, numNeighbor);
+                        const weights = [];
                         const votes = [];
                         while (votes.length < k) {
-                            const value = DRESS.get(neighbors.pop(), feature);
+                            const near = nears.pop();
+                            const value = DRESS.get(near[0 /* NEIGHBOR */][0 /* SUBJECT */], feature);
                             if (value !== null) {
                                 votes.push(value);
+                                weights.push(-near[1 /* DISTANCE */]);
                             }
                         }
-                        DRESS.set(subject, feature, categorical ? DRESS.mode(votes) : DRESS.mean(votes));
+                        if (!weighted) {
+                            DRESS.set(subject, feature, categorical ? DRESS.mode(votes) : DRESS.mean(votes));
+                        }
+                        else {
+                            DRESS.set(subject, feature, categorical ? DRESS.wmode(votes, argmax(weights)) : DRESS.wmean(votes, argmax(weights)));
+                        }
                     });
                     const count = nulls.length;
                     return {
