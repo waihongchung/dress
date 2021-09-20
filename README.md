@@ -22,9 +22,9 @@ The following prerequisites are necessary to take full advantage of the DRESS Ki
 ## Getting Started
 1.	Download the entire DRESS project as a zip file. 
 2.	Unzip all files into a folder.
-3.	Open `example1.htm` in the `examples` folder using a browser.
+3.	Open `1.descriptive.htm` in the `examples` folder using a browser.
 4.	Click on `Choose File` and select the sample dataset `data.json` included in the `data` folder.
-5.	Open `example1.js` in a text editor.
+5.	Open `1.descriptive.js` in a text editor.
 6.	Make changes to the `processJSON` function. Save any changes.
 7.	Refresh the browser to relaunch the example.
 
@@ -90,6 +90,8 @@ The DRESS Kit is written in plain ES6 JavaScript. Decision is made, however, to 
 	- `DRESS.logistic` - Multiple logistic regressions.
 	- `DRESS.linear` - Multiple linear regressions.
 	- `DRESS.polynomial` - Simple polynomial regression.
+	- `DRESS.backward` - Apply the backward elimination algorithm on a set of features.
+	- `DRESS.forward` - Apply the forward selection algorithm on a set of features.
 
 - `dress-visualization.js` contains methods for visualizing data structures.
 	- `DRESS.histograms` - Generate ASCII histograms.
@@ -101,10 +103,6 @@ The DRESS Kit is written in plain ES6 JavaScript. Decision is made, however, to 
 
 - `dress-roc.js` contains methods for generating receiver operating characteristic curve.
 	- `DRESS.roc` - Generate a nonparametic receiver operating characteristic curve based on one or more binary classifiers.
-
-- `dress-stepwise.js` contains methods for building regression models using the stepwise feature selection algorithms.
-	- `DRESS.backward` - Apply the backward elimination algorithm on a set of features.
-	- `DRESS.forward` - Apply the forward selection algorithm on a set of features.
 
 - `dress-knn.js` contains methods for building a kNN model.
 	- `DRESS.knn` - Build a K-nearest-neighbor Model.
