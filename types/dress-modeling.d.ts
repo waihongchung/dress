@@ -24,8 +24,8 @@ declare namespace DRESS {
      *
      * @param {string} algorithm - The name of the algorithm used to create the models.
      * @param {object[]} subjects - The subjects to be analyzed.
-     * @param {any[]} parameters - One or more parameters to be passed to the algorithm to create a model.
-     * @param {any[]} parameters2 - One or more parameters to be passed to the algorithm to 'performance' function of the model.
+     * @param {any[]} trainings - One or more parameters to be passed to the algorithm to train a model.
+     * @param {any[]} validations - One or more parameters to be passed to the algorithm to 'performance' function of the model.
      * @returns A result object containing the following properties:
      *   seed (the random generate seed),
      *   measure (the statistical measure used to determine a model's performance, either accuracy for classification models or R2 for regression models),
@@ -33,7 +33,7 @@ declare namespace DRESS {
      *   ci (the confidence interval of the model performance),
      *   text.
      */
-    let crossValidate: (algorithm: any, subjects: object[], parameters?: any[], parameters2?: any[]) => {
+    let crossValidate: (algorithm: any, subjects: object[], trainings?: any[], validations?: any[]) => {
         seed: number;
         measure: string;
         mean: number;
@@ -41,12 +41,11 @@ declare namespace DRESS {
         text: string;
     };
     /**
-     * @summary Automatic Hyperparameter Tuning
      *
-     * @description This method simplifies the hyperparameter tuning process by automatically testing a range of hyperparameter values.
+     * @ignore
      *
      */
-    let hypertune: (hyperparameters: object, properties: string[], intervals: number[], stops: number, algorithm: any, subjects: object[], ...parameters: any[]) => {
+    let hyperTune: (initial: object, eventual: object, algorithm: any, subjects: object[], trainings?: any[], validations?: any[]) => {
         hyperparameters: any;
         performance: any;
         text: string;

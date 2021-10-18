@@ -148,19 +148,19 @@ declare namespace DRESS {
      */
     let merge: (feature: string, ...arrays: object[][]) => object[];
     /**
-     * @summary Create a new array of containing the values of the specified feature(s), and optionally add a back reference to the subject.
+     * @summary Create a new array of containing the values of the specified feature, and optionally add a back reference to the subject.
      *
-     * @description This method creates a new array of containing the values of the specified feature(s), and optionally add a back reference to the subject.
+     * @description This method creates a new array of containing the values of the specified feature, and optionally add a back reference to the subject if the feature is an object.
      * The feature should be a property of the subject or is accessible using the dot notation.
      *
      * Suppose there is an array of study subjects, each suject has a feature called 'encounters', which is an array of hospital encounters associated with the subject.
-     * You can create a new array of encounters, by calling pluck(subjects, ['encounters']). You can optionally create, as a property of each encounter object, a back reference, called 'subject' to the parent subject, by calling
-     * pluck(subjects, ['encounters'], 'subject').
+     * You can create a new array of encounters, by calling pluck(subjects, 'encounters'). You can optionally create, as a property of each encounter object, a back reference, called 'subject' to the parent subject, by calling
+     * pluck(subjects, 'encounters', 'subject').
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string[]} features - One or more features to be selected.
-     * @param {string} [reference=null] - Optional, the name of the property that holds the back reference to the parent subject.
+     * @param {string} feature - A feature to be selected.
+     * @param {string} [reference=null] - Optional, the name of the property that holds the back reference to the parent subject if the feature is an object.
      * @returns {object[]} An array of feature values.
      */
-    let pluck: (subjects: object[], features: string[], reference?: string) => any[];
+    let pluck: (subjects: object[], feature: string, reference?: string) => any[];
 }

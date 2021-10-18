@@ -20,7 +20,7 @@ declare namespace DRESS {
      * @param {string[]} numericals - An array of numerical features to be used as classifiers/regressors.
      * @param {string[]} categoricals - An array of categorical features to be used as classifiers/regressors.
      * @param {boolean} [classification=true] - Model type. Default to classification. Set to false to build a regression model.
-     * @param {object} [hyperparameters={}] - An object that specifies the hyperparameters for the model. Supported hyperparameters included minSize, maxDepth, numTree, and samplingRate.
+     * @param {object} [hyperparameters={}] - An object that specifies the hyperparameters for the model. Supported hyperparameters included size, depth, trees, and sampling.
      * @returns {object} A random forest model containing the following properties:
      *   seed (the random generate seed value),
      *   outcome (the outcome of the model),
@@ -98,7 +98,7 @@ declare namespace DRESS {
      * @param {string[]} numericals - An array of numerical features to be used as classifiers/regressors.
      * @param {string[]} categoricals - An array of categorical features to be used as classifiers/regressors.
      * @param {boolean} [classification=true] - Model type. Default to classification. Set to false to build a regression model.
-     * @param {object} [hyperparameters={}] - An object that specifies the hyperparameters for the model. Supported hyperparameters included minSize, maxDepth, numTree, samplingRate, and learningRate.
+     * @param {object} [hyperparameters={}] - An object that specifies the hyperparameters for the model. Supported hyperparameters included size, depth, trees, sampling, and learning.
      * @returns {object} A random forest model containing the following properties:
      *   seed (the random generate seed value),
      *   outcome (the outcome of the model),

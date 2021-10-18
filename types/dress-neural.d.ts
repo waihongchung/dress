@@ -40,7 +40,7 @@ declare namespace DRESS {
      *   roc (a method for creating an ROC curve based on the model, accepts an array of subjects as a parameter. MUST include the dress-roc.js package.),
      *   performance (a method for evaluting the performance of the mode, accepts an array of subjects as a parameter).
      */
-    export let neuralNetwork: (subjects: object | object[], outcome: string, features: string[], classification: boolean, hyperparameters?: any) => {
+    export let neuralNetwork: (subjects: object | object[], outcome: string, features: string[], classification?: boolean, hyperparameters?: any) => {
         seed: number;
         outcome: string;
         features: string[];
