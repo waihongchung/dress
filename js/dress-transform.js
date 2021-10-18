@@ -321,45 +321,37 @@ var DRESS;
         return Array.from(objects.values());
     };
     /**
-     * @summary Create a new array of containing the values of the specified feature(s), and optionally add a back reference to the subject.
+     * @summary Create a new array of containing the values of the specified feature, and optionally add a back reference to the subject.
      *
-     * @description This method creates a new array of containing the values of the specified feature(s), and optionally add a back reference to the subject.
+     * @description This method creates a new array of containing the values of the specified feature, and optionally add a back reference to the subject if the feature is an object.
      * The feature should be a property of the subject or is accessible using the dot notation.
      *
      * Suppose there is an array of study subjects, each suject has a feature called 'encounters', which is an array of hospital encounters associated with the subject.
-     * You can create a new array of encounters, by calling pluck(subjects, ['encounters']). You can optionally create, as a property of each encounter object, a back reference, called 'subject' to the parent subject, by calling
-     * pluck(subjects, ['encounters'], 'subject').
+     * You can create a new array of encounters, by calling pluck(subjects, 'encounters'). You can optionally create, as a property of each encounter object, a back reference, called 'subject' to the parent subject, by calling
+     * pluck(subjects, 'encounters', 'subject').
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string[]} features - One or more features to be selected.
-     * @param {string} [reference=null] - Optional, the name of the property that holds the back reference to the parent subject.
+     * @param {string} feature - A feature to be selected.
+     * @param {string} [reference=null] - Optional, the name of the property that holds the back reference to the parent subject if the feature is an object.
      * @returns {object[]} An array of feature values.
      */
-    DRESS.pluck = (subjects, features, reference = null) => {
-        const numSubject = subjects.length;
-        const numFeature = features.length;
-        const values = new Array(numSubject);
-        if (numFeature) {
-            let i = numSubject;
-            while (i--) {
-                let value;
-                if (numFeature > 1) {
-                    value = {};
-                    let j = numFeature;
-                    while (j--) {
-                        DRESS.set(value, features[j], DRESS.get(subjects[i], features[j]));
-                    }
-                }
-                else {
-                    value = DRESS.get(subjects[i], features[0]);
-                }
-                if (reference) {
-                    if ((typeof value === 'object') && !Array.isArray(value)) {
-                        DRESS.set(value, reference, subjects[i]);
-                    }
-                }
-                values[i] = value;
+    DRESS.pluck = (subjects, feature, reference = null) => {
+        const values = [];
+        let i = subjects.length;
+        while (i--) {
+            let value = DRESS.get(subjects[i], feature);
+            if (!Array.isArray(value)) {
+                value = [value];
             }
+            if (reference) {
+                let j = value.length;
+                while (j--) {
+                    if ((typeof value[j] === 'object') && !Array.isArray(value[j])) {
+                        DRESS.set(value[j], reference, subjects[i]);
+                    }
+                }
+            }
+            values.push(...value);
         }
         return values;
     };

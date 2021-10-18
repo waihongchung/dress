@@ -75,8 +75,8 @@ var DRESS;
      *
      * @param {string} algorithm - The name of the algorithm used to create the models.
      * @param {object[]} subjects - The subjects to be analyzed.
-     * @param {any[]} parameters - One or more parameters to be passed to the algorithm to create a model.
-     * @param {any[]} parameters2 - One or more parameters to be passed to the algorithm to 'performance' function of the model.
+     * @param {any[]} trainings - One or more parameters to be passed to the algorithm to train a model.
+     * @param {any[]} validations - One or more parameters to be passed to the algorithm to 'performance' function of the model.
      * @returns A result object containing the following properties:
      *   seed (the random generate seed),
      *   measure (the statistical measure used to determine a model's performance, either accuracy for classification models or R2 for regression models),
@@ -84,7 +84,7 @@ var DRESS;
      *   ci (the confidence interval of the model performance),
      *   text.
      */
-    DRESS.crossValidate = (algorithm, subjects, parameters = [], parameters2 = []) => {
+    DRESS.crossValidate = (algorithm, subjects, trainings = [], validations = []) => {
         const seed = DRESS.SEED;
         const numFold = 5;
         //
@@ -106,8 +106,8 @@ var DRESS;
             DRESS.SEED = seed;
             const validation = folds.pop();
             const training = folds.reduce((folds, fold) => folds.concat(fold));
-            const model = algorithm.apply(null, [training, ...parameters]);
-            const performance = model.performance.apply(model, [validation, ...parameters2]);
+            const model = algorithm.apply(null, [training, ...trainings]);
+            const performance = model.performance.apply(model, [validation, ...validations]);
             measure = (typeof performance['accuracy'] === 'number') ? 'accuracy' : 'r2';
             metrics.push(performance[measure]);
             folds.unshift(validation);
@@ -131,46 +131,45 @@ var DRESS;
         };
     };
     /**
-     * @summary Automatic Hyperparameter Tuning
      *
-     * @description This method simplifies the hyperparameter tuning process by automatically testing a range of hyperparameter values.
+     * @ignore
      *
      */
-    DRESS.hypertune = (hyperparameters, properties, intervals, stops, algorithm, subjects, ...parameters) => {
+    DRESS.hyperTune = (initial, eventual, algorithm, subjects, trainings = [], validations = []) => {
         const seed = DRESS.SEED;
-        if (properties.length !== intervals.length) {
-            return null;
-        }
-        properties.map((property, index) => {
-            if (typeof hyperparameters[property] === 'undefined') {
-                hyperparameters[property] = intervals[index];
+        const numStop = 5;
+        const properties = [];
+        const intervals = [];
+        for (let property in initial) {
+            if ((typeof eventual[property] !== 'undefined') && (eventual[property] !== null) && (eventual[property] !== initial[property])) {
+                properties.push(property);
+                intervals.push((eventual[property] - initial[property]) / numStop);
             }
-        });
-        //
-        const hp = JSON.parse(JSON.stringify(hyperparameters));
+        }
+        const hyperparameters = JSON.parse(JSON.stringify(initial));
         let changed = true;
         let performance = null;
         while (changed) {
             changed = false;
             properties.map((property, index) => {
                 const performances = new Map();
-                const current = hp[property];
-                hp[property] = hyperparameters[property];
-                let i = stops;
+                const current = hyperparameters[property];
+                hyperparameters[property] = initial[property];
+                let i = numStop;
                 while (i--) {
                     DRESS.SEED = seed;
-                    performances.set(hp[property], DRESS.crossValidate(algorithm, subjects, ...parameters, hp));
-                    hp[property] += intervals[index];
+                    performances.set(hyperparameters[property], DRESS.crossValidate(algorithm, subjects, [...trainings, hyperparameters], [...validations, hyperparameters]));
+                    hyperparameters[property] += intervals[index];
                 }
                 performance = Array.from(performances).sort(([, a], [, b]) => a.mean - b.mean).pop();
                 changed || (changed = performance[0] !== current);
-                hp[property] = performance[0];
+                hyperparameters[property] = performance[0];
             });
         }
         return {
-            hyperparameters: hp,
+            hyperparameters,
             performance: performance[1],
-            text: properties.map(property => property + ' = ' + hp[property]).join('	'),
+            text: properties.map(property => property + ' = ' + hyperparameters[property]).join('	'),
         };
     };
 })(DRESS || (DRESS = {}));

@@ -65,18 +65,18 @@ var DRESS;
         while (i--) {
             subjectScores[i] = [subjects[i], model.predict(subjects[i])];
         }
-        const controlScores = new Array(numControl);
+        const controlScores = new Array(numControl + 1);
         i = numControl;
+        controlScores[i] = [{}, Number.POSITIVE_INFINITY];
         while (i--) {
             controlScores[i] = [controls[i], model.predict(controls[i])];
         }
         subjectScores.sort((a, b) => a[1] - b[1]);
         controlScores.sort((a, b) => a[1] - b[1]);
-        controlScores.push([{}, Number.POSITIVE_INFINITY]);
         const matches = [];
         if (!greedy) {
-            const pairings = new Array(numControl);
-            let i = numControl;
+            const pairings = new Array(numControl + 1);
+            let i = numControl + 1;
             while (i--) {
                 pairings[i] = [null, Number.POSITIVE_INFINITY];
             }
@@ -96,7 +96,6 @@ var DRESS;
                     });
                     let before = index;
                     let beforeDiff = Number.POSITIVE_INFINITY;
-                    ;
                     while (--before >= 0) {
                         beforeDiff = Math.abs(controlScores[before][1] - score);
                         if (beforeDiff < pairings[before][1]) {

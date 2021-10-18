@@ -235,13 +235,13 @@ var DRESS;
      *   roc (a method for creating an ROC curve based on the model, accepts an array of subjects as a parameter. MUST include the dress-roc.js package.),
      *   performance (a method for evaluting the performance of the mode, accepts an array of subjects as a parameter).
      */
-    DRESS.neuralNetwork = (subjects, outcome, features, classification, hyperparameters = {}) => {
+    DRESS.neuralNetwork = (subjects, outcome, features, classification = true, hyperparameters = {}) => {
         const alpha = hyperparameters.alpha || 0.01;
         const beta1 = hyperparameters.beta1 || 0.8;
         const beta2 = hyperparameters.beta2 || 0.99;
         const layout = hyperparameters.layout || [];
         const activator = hyperparameters.activator || 1 /* LEAKY */;
-        const epoch = hyperparameters.epoch || 2500;
+        const epoch = Math.round(hyperparameters.epoch) || 2500;
         let seed;
         let layers;
         let classes;

@@ -3,10 +3,18 @@ var DRESS;
     /**
      * @ignore
      */
-    let features = (subject, numericals, categoricals) => [
-        ...numericals.map(numerical => DRESS.numeric(DRESS.get(subject, numerical))),
-        ...categoricals.map(categorical => DRESS.categoric(DRESS.get(subject, categorical)))
-    ];
+    let features = (subject, numericals, categoricals) => {
+        let n = numericals.length;
+        let c = categoricals.length;
+        const features = new Array(n + c);
+        while (c--) {
+            features[n + c] = DRESS.categoric(DRESS.get(subject, categoricals[c]));
+        }
+        while (n--) {
+            features[n] = DRESS.numeric(DRESS.get(subject, numericals[n]));
+        }
+        return features;
+    };
     /**
      * @ignore
      */
@@ -19,7 +27,7 @@ var DRESS;
                 const value = rows[i][column];
                 counts.set(value, (counts.get(value) || 0) + 1);
             }
-            return 1 - Array.from(counts.values()).reduce((gini, count) => gini + (count / length) * (count / length), 0);
+            return 1 - [...counts.values()].reduce((gini, count) => gini + (count / length) * (count / length), 0);
         }
         return 0;
     };
@@ -72,40 +80,42 @@ var DRESS;
     /**
      * @ignore
      */
-    let vote = (row, numNumerical, trees, classification) => {
-        const numTree = trees.length;
-        const votes = new Array(numTree);
-        let i = numTree;
+    let harvest = (row, numNumerical, trees, classification) => {
+        let i = trees.length;
+        const votes = new Array(i);
         while (i--) {
-            let node = trees[i];
-            while (true) {
-                const descendent = ((node.feature < numNumerical) ? (row[node.feature] < node.cutoff) : (row[node.feature] === node.cutoff)) ? node.left : node.right;
-                if (Array.isArray(descendent)) {
-                    votes[i] = classification ? DRESS.mode(descendent) : DRESS.mean(descendent);
-                    break;
-                }
-                else {
-                    node = descendent;
-                }
-            }
+            votes[i] = pick(row, numNumerical, trees[i], classification);
         }
         return votes;
     };
     /**
      * @ignore
      */
-    let stump = (rows, features, numNumerical, outcome, classification, impurity, depth, maxDepth, minSize) => {
+    let pick = (row, numNumerical, node, classification) => {
+        while (true) {
+            const descendent = ((node.feature < numNumerical) ? (row[node.feature] < node.cutoff) : (row[node.feature] === node.cutoff)) ? node.left : node.right;
+            if (Array.isArray(descendent)) {
+                return classification ? DRESS.mode(descendent) : DRESS.mean(descendent);
+            }
+            else {
+                node = descendent;
+            }
+        }
+    };
+    /**
+     * @ignore
+     */
+    let sprout = (rows, features, numNumerical, outcome, classification, impurity, depth, maxDepth, minSize) => {
         const NUM_TRIES = 10;
         const numRow = rows.length;
         if ((impurity > 0) && (numRow > minSize) && (depth < maxDepth)) {
             let feature;
-            let optimalCutoff;
+            let optimalCutoff = null;
             let optimalParts = [null, null, null, null, Number.POSITIVE_INFINITY];
             let retries = NUM_TRIES;
             while ((retries--) && (optimalParts[4] >= impurity)) {
                 feature = features[DRESS.randi(features.length)];
                 const numerical = (feature < numNumerical);
-                optimalCutoff = null;
                 let tries = NUM_TRIES;
                 while (tries--) {
                     let cutoff;
@@ -130,8 +140,8 @@ var DRESS;
                     feature,
                     cutoff: optimalCutoff,
                     impurity: optimalParts[4],
-                    left: stump(optimalParts[0], features, numNumerical, outcome, classification, optimalParts[1], depth + 1, maxDepth, minSize),
-                    right: stump(optimalParts[2], features, numNumerical, outcome, classification, optimalParts[3], depth + 1, maxDepth, minSize),
+                    left: sprout(optimalParts[0], features, numNumerical, outcome, classification, optimalParts[1], depth + 1, maxDepth, minSize),
+                    right: sprout(optimalParts[2], features, numNumerical, outcome, classification, optimalParts[3], depth + 1, maxDepth, minSize),
                 };
             }
         }
@@ -151,7 +161,7 @@ var DRESS;
      * @param {string[]} numericals - An array of numerical features to be used as classifiers/regressors.
      * @param {string[]} categoricals - An array of categorical features to be used as classifiers/regressors.
      * @param {boolean} [classification=true] - Model type. Default to classification. Set to false to build a regression model.
-     * @param {object} [hyperparameters={}] - An object that specifies the hyperparameters for the model. Supported hyperparameters included minSize, maxDepth, numTree, and samplingRate.
+     * @param {object} [hyperparameters={}] - An object that specifies the hyperparameters for the model. Supported hyperparameters included size, depth, trees, and sampling.
      * @returns {object} A random forest model containing the following properties:
      *   seed (the random generate seed value),
      *   outcome (the outcome of the model),
@@ -167,41 +177,44 @@ var DRESS;
      *   importance (a method for reporting feature importance).
      */
     DRESS.randomForest = (subjects, outcome, numericals, categoricals, classification = true, hyperparameters = {}) => {
-        const minSize = hyperparameters.size || (classification ? 1 : 5);
-        const maxDepth = hyperparameters.depth || 10;
-        const numTree = hyperparameters.trees || 100;
-        const samplingRate = hyperparameters.sampling || 0;
+        const minSize = Math.round(hyperparameters.size) || (classification ? 1 : 5);
+        const maxDepth = Math.round(hyperparameters.depth) || 5;
+        const numTree = Math.round(hyperparameters.trees) || 200;
+        const samplingRate = hyperparameters.sampling || 0.5;
         let seed;
         let trees;
         let impurity;
         let classes;
         if (Array.isArray(subjects)) {
             seed = DRESS.SEED;
-            const rows = new Array(subjects.length);
+            const numSubject = subjects.length;
+            const rows = new Array(numSubject);
             classes = [];
             if (classification) {
-                subjects.map((subject, index) => {
-                    const value = DRESS.categoric(DRESS.get(subject, outcome));
+                let i = numSubject;
+                while (i--) {
+                    const value = DRESS.categoric(DRESS.get(subjects[i], outcome));
                     let cls = classes.indexOf(value);
                     if (cls === -1) {
                         cls = classes.push(value) - 1;
                     }
-                    rows[index] = [...features(subject, numericals, categoricals), cls];
-                });
+                    rows[i] = [...features(subjects[i], numericals, categoricals), cls];
+                }
             }
             else {
-                subjects.map((subject, index) => {
-                    rows[index] = [...features(subject, numericals, categoricals), DRESS.numeric(DRESS.get(subject, outcome))];
-                });
+                let i = numSubject;
+                while (i--) {
+                    rows[i] = [...features(subjects[i], numericals, categoricals), DRESS.numeric(DRESS.get(subjects[i], outcome))];
+                }
             }
             const numNumerical = numericals.length;
             const numColumn = numNumerical + categoricals.length;
             trees = [];
             impurity = classification ? gini(rows, numColumn) : mse(rows, numColumn);
-            const numFeature = (samplingRate === 0) ? Math.ceil(Math.sqrt(numColumn)) : Math.ceil(samplingRate * numColumn);
+            const numFeature = Math.ceil(samplingRate * numColumn);
             while (trees.length < numTree) {
                 const columns = [...Array(numColumn).keys()].sort(_ => DRESS.random() - 0.5).slice(-numFeature);
-                const tree = stump(rows, columns, numNumerical, numColumn, classification, impurity, 0, maxDepth, minSize);
+                const tree = sprout(rows, columns, numNumerical, numColumn, classification, impurity, 0, maxDepth, minSize);
                 if (!Array.isArray(tree)) {
                     trees.push(tree);
                 }
@@ -227,42 +240,63 @@ var DRESS;
             text: '[' + outcome + '] seed: ' + seed,
             predict(subject) {
                 const classification = this.classes.length;
-                const votes = vote(features(subject, this.numericals, this.categoricals), this.numericals.length, this.trees, classification);
+                const votes = harvest(features(subject, this.numericals, this.categoricals), this.numericals.length, this.trees, classification);
                 return classification ? this.classes[DRESS.mode(votes)] : DRESS.mean(votes);
             },
             roc(subjects, roc = DRESS.roc) {
                 if (this.classes.length) {
                     const numSubject = subjects.length;
-                    const numNumerical = this.numericals.length;
+                    const numericals = this.numericals;
+                    const numNumerical = numericals.length;
+                    const categoricals = this.categoricals;
+                    const outcome = this.outcome;
+                    const trees = this.trees;
                     const expectations = new Array(numSubject);
                     const votes = new Array(numSubject);
-                    subjects.map((subject, index) => {
-                        expectations[index] = DRESS.categoric(DRESS.get(subject, this.outcome));
-                        votes[index] = vote(features(subject, this.numericals, this.categoricals), numNumerical, this.trees, true);
-                    });
+                    let i = numSubject;
+                    while (i--) {
+                        expectations[i] = DRESS.categoric(DRESS.get(subjects[i], outcome));
+                        votes[i] = harvest(features(subjects[i], numericals, categoricals), numNumerical, trees, true);
+                    }
                     return this.classes.map((cls, clsIndex) => {
                         const predictions = new Array(numSubject);
-                        expectations.map((expectation, index) => {
-                            predictions[index] = [(expectation === cls) ? 1 : 0, votes[index].filter(vote => vote === clsIndex).length / votes[index].length];
-                        });
+                        let i = numSubject;
+                        while (i--) {
+                            predictions[i] = [(expectations[i] === cls) ? 1 : 0, votes[i].filter(vote => vote === clsIndex).length / votes[i].length];
+                        }
                         return roc({ predictions }, [cls], ['randomForest']);
                     });
                 }
                 return null;
             },
             performance(subjects) {
-                const numNumerical = this.numericals.length;
-                if (this.classes.length) {
-                    return DRESS.accuracies(subjects.map(subject => [
-                        DRESS.categoric(DRESS.get(subject, this.outcome)),
-                        this.classes[DRESS.mode(vote(features(subject, this.numericals, this.categoricals), numNumerical, this.trees, true))]
-                    ]));
+                const classes = this.classes;
+                const numSubject = subjects.length;
+                const numericals = this.numericals;
+                const numNumerical = numericals.length;
+                const categoricals = this.categoricals;
+                const outcome = this.outcome;
+                const trees = this.trees;
+                const predictions = new Array(numSubject);
+                if (classes.length) {
+                    let i = numSubject;
+                    while (i--) {
+                        predictions[i] = [
+                            DRESS.categoric(DRESS.get(subjects[i], outcome)),
+                            classes[DRESS.mode(harvest(features(subjects[i], numericals, categoricals), numNumerical, trees, true))]
+                        ];
+                    }
+                    return DRESS.accuracies(predictions);
                 }
                 else {
-                    return DRESS.errors(subjects.map(subject => [
-                        DRESS.numeric(DRESS.get(subject, this.outcome)),
-                        DRESS.mean(vote(features(subject, this.numericals, this.categoricals), numNumerical, this.trees, false))
-                    ]));
+                    let i = numSubject;
+                    while (i--) {
+                        predictions[i] = [
+                            DRESS.numeric(DRESS.get(subjects[i], outcome)),
+                            DRESS.mean(harvest(features(subjects[i], numericals, categoricals), numNumerical, trees, false))
+                        ];
+                    }
+                    return DRESS.errors(predictions);
                 }
             },
             importance() {
@@ -303,7 +337,7 @@ var DRESS;
      * @param {string[]} numericals - An array of numerical features to be used as classifiers/regressors.
      * @param {string[]} categoricals - An array of categorical features to be used as classifiers/regressors.
      * @param {boolean} [classification=true] - Model type. Default to classification. Set to false to build a regression model.
-     * @param {object} [hyperparameters={}] - An object that specifies the hyperparameters for the model. Supported hyperparameters included minSize, maxDepth, numTree, samplingRate, and learningRate.
+     * @param {object} [hyperparameters={}] - An object that specifies the hyperparameters for the model. Supported hyperparameters included size, depth, trees, sampling, and learning.
      * @returns {object} A random forest model containing the following properties:
      *   seed (the random generate seed value),
      *   outcome (the outcome of the model),
@@ -318,11 +352,11 @@ var DRESS;
      *   importance (a method for reporting feature importance).
      */
     DRESS.gradientBoosting = (subjects, outcome, numericals, categoricals, classification = true, hyperparameters = {}) => {
-        const minSize = hyperparameters.size || (classification ? 1 : 5);
-        const maxDepth = hyperparameters.depth || 3;
-        const numTree = hyperparameters.trees || (classification ? 50 : 100);
+        const minSize = Math.round(hyperparameters.size) || (classification ? 1 : 5);
+        const maxDepth = Math.round(hyperparameters.depth) || 3;
+        const numTree = Math.round(hyperparameters.trees) || (classification ? 20 : 50);
         const samplingRate = hyperparameters.sampling || 0.75;
-        const learningRate = hyperparameters.learning || 0.2;
+        const learningRate = hyperparameters.learning || 0.4;
         let seed;
         let trees;
         let impurities;
@@ -333,41 +367,46 @@ var DRESS;
             const rows = new Array(numSubject);
             classes = [];
             if (classification) {
-                subjects.map((subject, index) => {
-                    const value = DRESS.categoric(DRESS.get(subject, outcome));
+                let i = numSubject;
+                while (i--) {
+                    const value = DRESS.categoric(DRESS.get(subjects[i], outcome));
                     let cls = classes.indexOf(value);
                     if (cls === -1) {
                         cls = classes.push(value) - 1;
                     }
-                    rows[index] = [...features(subject, numericals, categoricals), 0, 0, cls];
-                });
+                    rows[i] = [...features(subjects[i], numericals, categoricals), 0, 0, cls];
+                }
             }
             else {
-                subjects.map((subject, index) => {
-                    const value = DRESS.numeric(DRESS.get(subject, outcome));
-                    rows[index] = [...features(subject, numericals, categoricals), value * learningRate, value];
-                });
+                let i = numSubject;
+                while (i--) {
+                    const value = DRESS.numeric(DRESS.get(subjects[i], outcome));
+                    rows[i] = [...features(subjects[i], numericals, categoricals), value * learningRate, value];
+                }
             }
             const numNumerical = numericals.length;
             const numColumn = numNumerical + categoricals.length;
-            const numColumn_1 = numColumn + 1;
             const columns = [...Array(numColumn).keys()];
-            let fit = (rows) => {
+            let boost = (rows, columns, numNumerical, outcome, maxDepth, minSize, numTree, samplingRate, learningRate) => {
+                const length = rows.length;
                 const trees = [];
-                const impurities = [mse(rows, numColumn)];
-                while ((trees.length < numTree) && (impurities[trees.length] > 0)) {
-                    const start = DRESS.randi(numSubject);
-                    const end = Math.floor(start + numSubject * samplingRate);
-                    const section = (end > numSubject) ? rows.slice(start, numSubject).concat(rows.slice(0, numSubject - end)) : rows.slice(start, end);
-                    const tree = stump(section, columns, numNumerical, numColumn, false, impurities[trees.length], 0, maxDepth, minSize);
+                const impurities = [];
+                while (trees.length < numTree) {
+                    const start = DRESS.randi(length);
+                    const end = Math.floor(start + length * samplingRate);
+                    const section = (end > length) ? rows.slice(start, length).concat(rows.slice(0, length - end)) : rows.slice(start, end);
+                    const impurity = mse(section, outcome);
+                    const tree = sprout(section, columns, numNumerical, outcome, false, impurity, 0, maxDepth, minSize);
                     if (!Array.isArray(tree)) {
                         trees.push(tree);
-                        let i = rows.length;
+                        impurities.push(impurity);
+                        let i = length;
                         while (i--) {
-                            rows[i][numColumn_1] -= DRESS.sum(vote(rows[i], numNumerical, [tree], false));
-                            rows[i][numColumn] = rows[i][numColumn_1] * learningRate;
+                            rows[i][outcome] = (rows[i][outcome + 1] -= pick(rows[i], numNumerical, tree, false)) * learningRate;
                         }
-                        impurities.push(mse(rows, numColumn));
+                    }
+                    else if ((impurity === 0) && (mse(rows, outcome) === 0)) {
+                        break;
                     }
                 }
                 return [trees, impurities];
@@ -375,15 +414,19 @@ var DRESS;
             trees = [];
             impurities = [];
             if (classification) {
-                classes.map((cls, index) => {
-                    rows.map(row => row[numColumn] = (row[numColumn_1] = (row[numColumn_1 + 1] === index) ? 1 : 0) * learningRate);
-                    const model = fit(rows);
-                    trees[index] = model[0];
-                    impurities[index] = model[1];
-                });
+                let clsIndex = classes.length;
+                while (clsIndex--) {
+                    let i = numSubject;
+                    while (i--) {
+                        rows[i][numColumn] = (rows[i][numColumn + 1] = (rows[i][numColumn + 2] === clsIndex) ? learningRate : 0);
+                    }
+                    const model = boost(rows, columns, numNumerical, numColumn, maxDepth, minSize, numTree, samplingRate, learningRate);
+                    trees[clsIndex] = model[0];
+                    impurities[clsIndex] = model[1];
+                }
             }
             else {
-                const model = fit(rows);
+                const model = boost(rows, columns, numNumerical, numColumn, maxDepth, minSize, numTree, samplingRate, learningRate);
                 trees.push(model[0]);
                 impurities.push(model[1]);
             }
@@ -408,45 +451,67 @@ var DRESS;
             text: '[' + outcome + '] seed: ' + seed,
             predict(subject) {
                 if (this.classes.length) {
-                    return this.classes.map((cls, index) => [cls, DRESS.sum(vote(features(subject, this.numericals, this.categoricals), this.numericals.length, this.trees[index], false))])
+                    return this.classes.map((cls, index) => [cls, DRESS.sum(harvest(features(subject, this.numericals, this.categoricals), this.numericals.length, this.trees[index], false))])
                         .sort((a, b) => a[1] - b[1]).pop()[0];
                 }
                 else {
-                    return DRESS.sum(vote(features(subject, this.numericals, this.categoricals), this.numericals.length, this.trees[0], false));
+                    return DRESS.sum(harvest(features(subject, this.numericals, this.categoricals), this.numericals.length, this.trees[0], false));
                 }
             },
             roc(subjects, roc = DRESS.roc) {
                 if (this.classes.length) {
                     const numSubject = subjects.length;
-                    const numNumerical = this.numericals.length;
+                    const numClass = this.classes.length;
+                    const numericals = this.numericals;
+                    const numNumerical = numericals.length;
+                    const categoricals = this.categoricals;
+                    const outcome = this.outcome;
+                    const trees = this.trees;
                     const expectations = new Array(numSubject);
                     const votes = new Array(numSubject);
-                    subjects.map((subject, index) => {
-                        expectations[index] = DRESS.categoric(DRESS.get(subject, this.outcome));
-                        votes[index] = this.classes.map((cls, clsIndex) => DRESS.sum(vote(features(subject, this.numericals, this.categoricals), numNumerical, this.trees[clsIndex], false)));
-                    });
+                    let i = numSubject;
+                    while (i--) {
+                        expectations[i] = DRESS.categoric(DRESS.get(subjects[i], outcome));
+                        votes[i] = new Array(numClass);
+                        let clsIndex = numClass;
+                        while (clsIndex--) {
+                            votes[i][clsIndex] = DRESS.sum(harvest(features(subjects[i], numericals, categoricals), numNumerical, trees[clsIndex], false));
+                        }
+                    }
                     return this.classes.map((cls, clsIndex) => {
                         const predictions = new Array(numSubject);
-                        expectations.map((expectation, index) => {
-                            predictions[index] = [(expectation === cls) ? 1 : 0, votes[index][clsIndex]];
-                        });
+                        let i = numSubject;
+                        while (i--) {
+                            predictions[i] = [(expectations[i] === cls) ? 1 : 0, votes[i][clsIndex]];
+                        }
                         return roc({ predictions }, [cls], ['gradientBoosting']);
                     });
                 }
                 return null;
             },
             performance(subjects) {
+                const numSubject = subjects.length;
+                const outcome = this.outcome;
+                const predictions = new Array(numSubject);
                 if (this.classes.length) {
-                    return DRESS.accuracies(subjects.map(subject => [
-                        DRESS.categoric(DRESS.get(subject, this.outcome)),
-                        this.predict(subject)
-                    ]));
+                    let i = numSubject;
+                    while (i--) {
+                        predictions[i] = [
+                            DRESS.categoric(DRESS.get(subjects[i], outcome)),
+                            this.predict(subjects[i])
+                        ];
+                    }
+                    return DRESS.accuracies(predictions);
                 }
                 else {
-                    return DRESS.errors(subjects.map(subject => [
-                        DRESS.numeric(DRESS.get(subject, this.outcome)),
-                        this.predict(subject)
-                    ]));
+                    let i = numSubject;
+                    while (i--) {
+                        predictions[i] = [
+                            DRESS.numeric(DRESS.get(subjects[i], outcome)),
+                            this.predict(subjects[i])
+                        ];
+                    }
+                    return DRESS.errors(predictions);
                 }
             },
             importance() {
