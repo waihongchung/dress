@@ -1,16 +1,18 @@
 declare namespace DRESS {
     /**
-     * @summary Normalize the specified features so that their values fall in the range of [0, 1].
+     * @summary Normalize the specified features so that their values fall in the range of [lower, upper].
      *
-     * @description This method loops through the specified features and applies a scaling factor to each feature so that all the values of said feature fall in the range of [0, 1].
-     * Each feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then the length of the array will be used.
-     * Otherwise, the property will be converted to a numeric value before the normalization process.
+     * @description This method loops through the specified features and applies a scaling factor to each feature so that all the values of said feature fall in the range of [lower, upper].
+     * By the default the lower limit is 0 and the upper limit is 1. Each feature should be a property of the subject or is accessible using the dot notation.
+     * If the property is an array, then the length of the array will be used. Otherwise, the property will be converted to a numeric value before the normalization process.
      *
      * NOTE: By default, this method is destructive and directly alters the values of the specified features. To store the transformed results in a different property, the names parameter must be specified.
      *
      * @param {object[]} subjects - The subjects to be processed.
      * @param {string[]} features - An array of features to be processed.
      * @param {string[]} [names=null] - An array of property names to be used to store the results. It MUST be of the same length as the features array.
+     * @param {number} [lower=0] - The lower limit. Default to 0.
+     * @param {number} [upper=1] - The upper limit. Default to 1.
      * @returns {object[]} An array of transformation parameters for debugging purposes. For each transformed feature, the following parameters are returned:
      *   feature (the feature transformed),
      *   name (the name of property that store the transformed values),
@@ -19,7 +21,7 @@ declare namespace DRESS {
      *   range (max - min),
      *   text
      */
-    let normalize: (subjects: object[], features: string[], names?: string[]) => {
+    let normalize: (subjects: object[], features: string[], names?: string[], lower?: number, upper?: number) => {
         feature: string;
         name: string;
         min: number;
@@ -112,7 +114,7 @@ declare namespace DRESS {
      * The UUID is designed in a way that each id is, for practical purposes, unique and the probability that there are duplicates is close enough to zero to be negligible.
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string} [name='id'] - Optional, the name of the property that holds the UUID. Default to 'uuid'.
+     * @param {string} [name='uuid'] - Optional, the name of the property that holds the UUID. Default to 'uuid'.
      * @returns {object[]} - An array of labeled subjects.
      */
     let uuid: (subjects: object[], name?: string) => object[];
@@ -163,4 +165,59 @@ declare namespace DRESS {
      * @returns {object[]} An array of feature values.
      */
     let pluck: (subjects: object[], feature: string, reference?: string) => any[];
+    /**
+     * @summary Apply One-Hot Encoding on the specified features.
+     *
+     * @description This method applies the one-hot encoding method on the specified categorical features. Each feature should be a property of the subject or is accessible using the dot notation.
+     * For each unique value of a categorical feature, a new label is created and is assigned `1` for the presence of that value and `0` for the absence of that value. If the property is an array,
+     * then more than one label may be assigned as `1`.
+     *
+     * For instance, a feature `Tobacco_Use`, which may contain one of three values, `Current`, `Never`, or `Past`, would be converted into an object that contains three properties `Tobacco_Use.Current`,
+     * `Tobacco_Use.Never`, and `Tobacco_Use.Past`. Depending on the original value of the `Tobacco_Use` feature, one of those three properties would be set to `1`, while the other two would be set to `0`.
+     *
+     * NOTE: By default, this method is destructive and directly alters the values of the specified features. To store the transformed results in a different property, the names parameter must be specified.
+     *
+     * @param {object[]} subjects - The subjects to be processed.
+     * @param {string[]} features - An array of features to be processed.
+     * @param {string[]} [names=null] - An array of property names to be used to store the results. It MUST be of the same length as the features array.
+     *
+     * @returns {object[]} An array of transformation parameters for debugging purposes. For each transformed feature, the following parameters are returned:
+     *   feature (the feature transformed),
+     *   name (the name of property that store the transformed values),
+     *   labels (an array of unique labels created for each feature),
+     *   text
+     */
+    let oneHot: (subjects: object[], features: string[], names?: string[]) => {
+        feature: string;
+        name: string;
+        labels: any[];
+        text: string;
+    }[];
+    /**
+     * @summary Reverse One-Hot Encoding on the specified features.
+     *
+     * @description This method reverses the one-hot encoding method on the specified categorical features. Each feature should be a property of the subject or is accessible using the dot notation.
+     * The value of each feature must be an one-hot encoding object created by the oneHot encoding method.
+     *
+     * For instance, a one-hot encoded feature called `Tobacco_Use` may be an object with three properties `Tobacco_Use.Current`, `Tobacco_Use.Former`, and `Tobacco_Use.Never`. The values of these properties must be numerical.
+     * If the threshold parameter is not set, then the property with the highest value (e.g. Tobacco_Use.Current = 0.9, Tobacco_Use.Former = 0.5, Tobacco_Use.Never = 0.2) will be selected as the decoded value (Tobacco_Use = Current).
+     * If the threshold parameter is set, then an properties with a value higher than the threshold will be selected as the decode values.
+     *
+     * NOTE: By default, this method is destructive and directly alters the values of the specified features. To store the transformed results in a different property, the names parameter must be specified.
+     *
+     * @param {object[]} subjects - The subjects to be processed.
+     * @param {string[]} features - An array of features to be processed.
+     * @param {string[]} [names=null] - An array of property names to be used to store the results. It MUST be of the same length as the features array.
+     * @param {number} [threshold=null] - The decoding threshold. Default to null, which means only the property with the highest value will be selected.
+     *
+     * @returns {object[]} An array of transformation parameters for debugging purposes. For each transformed feature, the following parameters are returned:
+     *   feature (the feature transformed),
+     *   name (the name of property that store the transformed values),
+     *   text
+     */
+    let hotOne: (subjects: object[], features: string[], names?: string[], threshold?: number) => {
+        feature: string;
+        name: string;
+        text: string;
+    }[];
 }

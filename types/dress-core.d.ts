@@ -94,6 +94,10 @@ declare namespace DRESS {
     /**
      * @ignore
      */
+    let randn: () => number;
+    /**
+     * @ignore
+     */
     let mode: (values: any[]) => any;
     /**
      * @ignore

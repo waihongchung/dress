@@ -85,7 +85,35 @@ declare namespace DRESS {
                 prevalence: number;
                 tpr: number;
                 tnr: number;
-                ppv: number;
+                ppv: number; /**
+                 * @summary Multiple linear regressions.
+                 *
+                 * @description This method builds a statistical model to predict the outcome values based on a list of features.
+                 * Each outcome and feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then the length of the array is used as the value of the outcome/feature.
+                 * If the property is not an array, then it would be converted to a numeric value.
+                 *
+                 * @param {object[]} subjects - The subjects to be analyzed.
+                 * @param {string} outcome - The outcome to be analyzed.
+                 * @param {string[]} features - An array of features to be analyzed.
+                 * @param {boolean} [origin=false] - Force intercept to past through the origin. Default to false.
+                 * @returns {object} A result object, containing the following properties:
+                 *   outcome (the outcome),
+                 *   r2 (the R2 value of the model),
+                 *   ar2 (the adjusted R2 value of the model)
+                 *   f (the F statistic of the model),
+                 *   p (p value, based on deviance),
+                 *   features (an array of features),
+                 *   text,
+                 *   predict (a method for making a prediction based on the model, accepts one subject as a parameter),
+                 *   performance (a method for evaluting the regression accuracy of the model, accepts an array of subjects as a parameter).
+                 *   For each feature, the following results are returned:
+                 *      feature (the feature being considered),
+                 *      coefficient (the regression coefficient),
+                 *      t (t score),
+                 *      p (p value),
+                 *      ci (confidence interval),
+                 *      text.
+                 */
                 npv: number;
                 f1: number;
                 text: string;

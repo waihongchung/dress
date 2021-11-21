@@ -9,6 +9,8 @@ declare namespace DRESS {
         Z: number[];
         pA: number[];
         dA: number[];
+        do: number[];
+        df: number;
         size: number;
         pSize: number;
         g: number;
@@ -17,7 +19,7 @@ declare namespace DRESS {
      * @summary Build a Multilayer Perceptron.
      *
      * @description This method builds a basic feedforward artificial neural network, also known as a multilayer perceptron. It can be used for either classification or regression purposes.
-     * The netowork is trained on the specified subjects and the specified numerical features. Each feature/outcome should be a property of the subject or is accessible using the dot notation.
+     * The network is trained on the specified subjects and the specified numerical features. Each feature/outcome should be a property of the subject or is accessible using the dot notation.
      * If a feature/outcome is an array, then the length of the array is used for computation.
      *
      * The neural network uses the ADAM optimizer and supports the following activation functions in the hidden layers: relu, leaky relu, sigmoid, tanh, and linear.
@@ -28,7 +30,7 @@ declare namespace DRESS {
      * @param {string} outcome - The outcome of the model. Must be numerical for regression or categorical for classification.
      * @param {string[]} features - An array of features to be used as classifiers/regressors.
      * @param {boolean} [classification=true] - Model type. Default to classification. Set to false to build a regression model.
-     * @param {object} [hyperparameters={}] - An object that specifies the hyperparameters for the model. Supported hyperparameters included alpha, beta1, beta2, layout, activator, and epoch.
+     * @param {object} [hyperparameters={}] - An object that specifies the hyperparameters for the model. Supported hyperparameters included alpha, beta1, beta2, layout, activator, epoch, and dilution.
      * @returns A multilayer preceptron containing the following properties:
      *   seed (the random generate seed value),
      *   outcome (the outcome of the model),
@@ -40,12 +42,14 @@ declare namespace DRESS {
      *   roc (a method for creating an ROC curve based on the model, accepts an array of subjects as a parameter. MUST include the dress-roc.js package.),
      *   performance (a method for evaluting the performance of the mode, accepts an array of subjects as a parameter).
      */
-    export let neuralNetwork: (subjects: object | object[], outcome: string, features: string[], classification?: boolean, hyperparameters?: any) => {
+    export let multilayerPerceptron: (subjects: object | object[], outcome: string, features: string[], classification?: boolean, hyperparameters?: any) => {
         seed: number;
         outcome: string;
         features: string[];
         layers: Layer[];
         classes: string[];
+        scales: [min: number, max: number][];
+        hyperparameters: any;
         text: string;
         predict(subject: object): any;
         roc(subjects: object[], roc?: (subjects: object | object[], outcomes: string[], classifiers: string[]) => {
@@ -83,6 +87,23 @@ declare namespace DRESS {
             rmse: number;
             text: string;
         };
+        train(subjects: object[]): void;
+    };
+    export let cGAN: (subjects: object[], features: string[], condition: string, hyperparameters?: any) => {
+        seed: number;
+        features: string[];
+        condition: string;
+        scales: [min: number, max: number][];
+        discriminator: Layer[];
+        generator: Layer[];
+        losses: {
+            discriminator: number;
+            generator: number;
+        }[];
+        hyperparameters: any;
+        text: string;
+        generate(encoding: object): {};
+        train(subjects: object[]): void;
     };
     export {};
 }

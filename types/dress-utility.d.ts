@@ -14,6 +14,16 @@ declare namespace DRESS {
      */
     let print: (...parameters: any[]) => void;
     /**
+     * @summary Extract and format the text property from a result object.
+     *
+     * @description This method extracts the text property from a result object returned by other methods in the DRESS toolkit.
+     * It also loops through the child objects of the result object, extracts and formats the text properties from those child objects.
+     *
+     * @param results - A result object.
+     * @returns An HTML formatted text.
+     */
+    let text: (results: object | object[]) => string;
+    /**
      * @summary Save the specified content as a file.
      *
      * @description This method enables saving the specified content as a file locally. If the specified content is NOT a string, it is converted into a JSON representation of the content first.
@@ -53,7 +63,7 @@ declare namespace DRESS {
      *
      * @param {string} method - The name of the method to be executed asynchronously.
      * @param {any[]} parameters - One or more parameters to be passed to the method being executed asychronously. The parameters MUST be a native Javascript type that can be cloned to the WebWorker.
-     * @returns {Promise} - A Promise that can be resolved into the result returned by the method being  executed asychronously.
+     * @returns {Promise} - A Promise that can be resolved into the result returned by the method being executed asychronously.
      */
     let async: (method: string, ...parameters: any[]) => Promise<unknown>;
 }
