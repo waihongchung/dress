@@ -52,7 +52,7 @@ The DRESS Kit is written in plain ES6 JavaScript. Decision is made, however, to 
 	- `DRESS.async` - Perform an asynchronous function call.
 
 - `dress-transform.js` contains methods for data transformation.
-	- `DRESS.normalize` - Normalize the specified features so that their values fall in the range of [0, 1].
+	- `DRESS.normalize` - Normalize the specified features so that their values fall in the range of [lower, upper].
 	- `DRESS.standardize` - Standardize the specified features so that their values have an arithmetic mean of 0 and a standard deviation of 1.
 	- `DRESS.booleanize` - Reduce the values of the specified feature into a boolean value (i.e. true or false).	
 	- `DRESS.categorize` - Categorize the values of the specified feature and encode the result using numerical values.	
@@ -60,6 +60,8 @@ The DRESS Kit is written in plain ES6 JavaScript. Decision is made, however, to 
 	- `DRESS.group` - Organize the subjects into groups based on the specified feature.
 	- `DRESS.merge` - Create a new array of subjects by merging several arrays of subjects based on the values of the specified feature.
 	- `DRESS.pluck` - Create a new array of containing the values of the specified features, and optionally add a back reference to the subject.
+	- `DRESS.oneHot` - Apply One-Hot Encoding on the specified features.
+	- `DRESS.hotOne` - Reverse One-Hot Encoding on the specified features.
 
 - `dress-sorting.js` contains methods for sorting array of subjects.
 	- `DRESS.sort` - Multilevel mixed data type sorting.
@@ -100,19 +102,20 @@ The DRESS Kit is written in plain ES6 JavaScript. Decision is made, however, to 
 - `dress-matching.js` contains methods for matching samples with controls.
 	- `DRESS.exact` - Perform exact matching.
 	- `DRESS.propensity` - Perform propensity score matching.
+	- `DRESS.adaptiveSynthesis` - Perform Adaptive Synthetic Sampling.
 
 - `dress-roc.js` contains methods for generating receiver operating characteristic curve.
 	- `DRESS.roc` - Generate a nonparametic receiver operating characteristic curve based on one or more binary classifiers.
 
 - `dress-knn.js` contains methods for building a kNN model.
-	- `DRESS.knn` - Build a K-nearest-neighbor Model.
+	- `DRESS.kNN` - Build a K-nearest-neighbor Model.
 
 - `dress-ensemble.js` contains methods for building ensemble models in machine learning.
 	- `DRESS.randomForest` - Build a Random Forest model.
 	- `DRESS.gradientBoosting` - Build a Stochastic Gradient Boosting model
 
 - `dress-neural.js` contains methods for building artificial neural network.
-	- `DRESS.neuralNetwork` - Build a Multilayer Perceptron.
+	- `DRESS.multilayerPerceptron` - Build a Multilayer Perceptron.
 
 ## Contribution
 The DRESS Kit is certainly a work-in-progress. Please feel free to contribute by making bug reports, comments, suggestions, and pull requests.
