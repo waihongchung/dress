@@ -1,5 +1,13 @@
 function processJSON(subjects) {
 
+    // Perform One-Hot Encoding for Gender, Smoking, and Alcohol
+    DRESS.print('<b>One-Hot Encoding</b>');
+    var encodings = DRESS.oneHot(subjects, ['Gender', 'Smoking', 'Alcohol']);
+    DRESS.print(
+        encodings
+    );
+    var encodedFeatures = encodings.reduce((array, encoding) => array.concat(encoding.labels.map(label => encoding.feature + '.' + label)), []);
+
     // Randomly select 80% of subjects as training.
     var trainings = [];
     var validations = [];
@@ -14,20 +22,20 @@ function processJSON(subjects) {
     //
     DRESS.print('<b>Neural Network</b>');
     DRESS.print('<b>Classification</b>');
-    var model = DRESS.neuralNetwork(trainings, 'Etiology', ['Age', 'BMI', 'Disease Duration', 'Scales.Nausea', 'Scales.Pain', 'Scales.QoL', 'Medications.PPI', 'Medications.Metoclopramide', 'Medications.Erythromycin'], true);
+    var model = DRESS.multilayerPerceptron(trainings, 'Etiology', ['Age', 'BMI', 'Disease Duration', 'Scales.QoL', 'Comorbidities', ...encodedFeatures], true, {dilution: 2});
     DRESS.print(
         model,
         model.performance(validations),  
-        DRESS.importance(trainings, model)          
+        DRESS.importance(model, trainings)          
     );
 
-    //
+    //    
     DRESS.print('<b>Regression</b>');
-    var model = DRESS.neuralNetwork(trainings, 'HA1C', ['Age', 'BMI', 'Disease Duration', 'Scales.Nausea', 'Scales.Pain', 'Scales.QoL', 'Medications.PPI', 'Medications.Metoclopramide', 'Medications.Erythromycin'], false);
+    var model = DRESS.multilayerPerceptron(trainings, 'HA1C', ['Age', 'BMI', 'Disease Duration', 'Scales.QoL', 'Comorbidities', ...encodedFeatures], false, {dilution: 2});
     DRESS.print(
         model,
         model.performance(validations),  
-        DRESS.importance(trainings, model)                
+        DRESS.importance(model, trainings)                
     );
 
 }
