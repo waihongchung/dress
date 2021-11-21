@@ -12,9 +12,9 @@ function processJSON(subjects) {
     DRESS.print('<b>Booleanize</b>');
     DRESS.print(
         // Label gender M as male
-        DRESS.booleanize(subjects, ['Gender'], ['M'], 'Male'),
+        DRESS.booleanize(subjects, ['Gender'], ['M'], ['Male']),
         // Label any subject with hypertension as a comorbidities as hypertension        
-        DRESS.booleanize(subjects, ['Comorbidities'], ['Hypertension'], 'Hypertension'),
+        DRESS.booleanize(subjects, ['Comorbidities'], ['Hypertension'], ['Hypertension']),
         // Label any subject with current and past smoking history as smokers        
         DRESS.booleanize(subjects, ['Smoking'], ['Former', 'Current']),
     );
@@ -40,8 +40,8 @@ function processJSON(subjects) {
 
     // Pluck Data
     DRESS.print('<b>Pluck</b>');
-    var scales = DRESS.pluck(subjects, ['Scales'], 'subject');
-    var medications = DRESS.pluck(subjects, ['Medications'], 'subject');
+    var scales = DRESS.pluck(subjects, 'Scales', 'subject');
+    var medications = DRESS.pluck(subjects, 'Medications', 'subject');
     DRESS.print(
         DRESS.means(scales, ['Nausea', 'Pain', 'QoL', 'subject.Age', 'subject.BMI']),
         DRESS.proportions(medications, ['PPI', 'Erythromycin', 'Metoclopramide']),
@@ -49,11 +49,28 @@ function processJSON(subjects) {
 
     // Merge Data
     DRESS.print('<b>Merge</b>');
-    var merged = DRESS.merge('subject.uuid', scales, medications);    
+    var merged = DRESS.merge('subject.uuid', scales, medications);
     DRESS.print(
         DRESS.means(merged, ['Nausea', 'Pain', 'QoL']),
         DRESS.proportions(merged, ['PPI', 'Erythromycin', 'Metoclopramide'])
     );
+
+    // One Hot Encoding
+    DRESS.print('<b>One Hot Encoding</b>');
+    DRESS.print(
+        DRESS.oneHot(subjects, ['Gender', 'Comorbidities'])
+    );
+
+    console.log(subjects)
+
+    // Reverse One Hot Encoding
+    DRESS.print('<b>Reverse One Hot Encoding</b>');
+    DRESS.print(
+        DRESS.hotOne(subjects, ['Gender']),
+        DRESS.hotOne(subjects, ['Comorbidities'], null, 0.5)
+    );
+
+    console.log(subjects)
 
 }
 
