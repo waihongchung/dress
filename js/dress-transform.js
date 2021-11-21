@@ -1,17 +1,19 @@
 var DRESS;
 (function (DRESS) {
     /**
-     * @summary Normalize the specified features so that their values fall in the range of [0, 1].
+     * @summary Normalize the specified features so that their values fall in the range of [lower, upper].
      *
-     * @description This method loops through the specified features and applies a scaling factor to each feature so that all the values of said feature fall in the range of [0, 1].
-     * Each feature should be a property of the subject or is accessible using the dot notation. If the property is an array, then the length of the array will be used.
-     * Otherwise, the property will be converted to a numeric value before the normalization process.
+     * @description This method loops through the specified features and applies a scaling factor to each feature so that all the values of said feature fall in the range of [lower, upper].
+     * By the default the lower limit is 0 and the upper limit is 1. Each feature should be a property of the subject or is accessible using the dot notation.
+     * If the property is an array, then the length of the array will be used. Otherwise, the property will be converted to a numeric value before the normalization process.
      *
      * NOTE: By default, this method is destructive and directly alters the values of the specified features. To store the transformed results in a different property, the names parameter must be specified.
      *
      * @param {object[]} subjects - The subjects to be processed.
      * @param {string[]} features - An array of features to be processed.
      * @param {string[]} [names=null] - An array of property names to be used to store the results. It MUST be of the same length as the features array.
+     * @param {number} [lower=0] - The lower limit. Default to 0.
+     * @param {number} [upper=1] - The upper limit. Default to 1.
      * @returns {object[]} An array of transformation parameters for debugging purposes. For each transformed feature, the following parameters are returned:
      *   feature (the feature transformed),
      *   name (the name of property that store the transformed values),
@@ -20,7 +22,7 @@ var DRESS;
      *   range (max - min),
      *   text
      */
-    DRESS.normalize = (subjects, features, names = null) => {
+    DRESS.normalize = (subjects, features, names = null, lower = 0, upper = 1) => {
         const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
         const replacement = names && (names.length === features.length);
         const pad2 = replacement && names.reduce((max, name) => Math.max(max, name.length), 0);
@@ -42,11 +44,12 @@ var DRESS;
                 values[i] = value;
             }
             const range = max - min;
+            const interval = upper - lower;
             if (range !== 0) {
                 const name = replacement ? names[index] : feature;
                 i = numSubject;
                 while (i--) {
-                    DRESS.set(subjects[i], name, (values[i] - min) / range);
+                    DRESS.set(subjects[i], name, interval * (values[i] - min) / range + lower);
                 }
                 return {
                     feature,
@@ -243,7 +246,7 @@ var DRESS;
      * The UUID is designed in a way that each id is, for practical purposes, unique and the probability that there are duplicates is close enough to zero to be negligible.
      *
      * @param {object[]} subjects - The subjects to be processed.
-     * @param {string} [name='id'] - Optional, the name of the property that holds the UUID. Default to 'uuid'.
+     * @param {string} [name='uuid'] - Optional, the name of the property that holds the UUID. Default to 'uuid'.
      * @returns {object[]} - An array of labeled subjects.
      */
     DRESS.uuid = (subjects, name = 'uuid') => {
@@ -269,20 +272,20 @@ var DRESS;
      * the other one in the specified name and contains an array of grouped subjects.
      */
     DRESS.group = (subjects, feature, name) => {
-        const objects = new Map();
+        const groups = new Map();
         let i = subjects.length;
         while (i--) {
             const value = DRESS.get(subjects[i], feature);
-            const object = objects.get(value);
-            if (object) {
-                object.push(subjects[i]);
+            const group = groups.get(value);
+            if (group) {
+                group.push(subjects[i]);
             }
             else {
-                objects.set(value, [subjects[i]]);
+                groups.set(value, [subjects[i]]);
             }
-            DRESS.del(subjects[i], feature);
+            //del(subjects[i], feature);
         }
-        return Array.from(objects).map(([key, value]) => {
+        return Array.from(groups).map(([key, value]) => {
             const object = {};
             DRESS.set(object, feature, key);
             DRESS.set(object, name, value);
@@ -354,5 +357,139 @@ var DRESS;
             values.push(...value);
         }
         return values;
+    };
+    /**
+     * @summary Apply One-Hot Encoding on the specified features.
+     *
+     * @description This method applies the one-hot encoding method on the specified categorical features. Each feature should be a property of the subject or is accessible using the dot notation.
+     * For each unique value of a categorical feature, a new label is created and is assigned `1` for the presence of that value and `0` for the absence of that value. If the property is an array,
+     * then more than one label may be assigned as `1`.
+     *
+     * For instance, a feature `Tobacco_Use`, which may contain one of three values, `Current`, `Never`, or `Past`, would be converted into an object that contains three properties `Tobacco_Use.Current`,
+     * `Tobacco_Use.Never`, and `Tobacco_Use.Past`. Depending on the original value of the `Tobacco_Use` feature, one of those three properties would be set to `1`, while the other two would be set to `0`.
+     *
+     * NOTE: By default, this method is destructive and directly alters the values of the specified features. To store the transformed results in a different property, the names parameter must be specified.
+     *
+     * @param {object[]} subjects - The subjects to be processed.
+     * @param {string[]} features - An array of features to be processed.
+     * @param {string[]} [names=null] - An array of property names to be used to store the results. It MUST be of the same length as the features array.
+     *
+     * @returns {object[]} An array of transformation parameters for debugging purposes. For each transformed feature, the following parameters are returned:
+     *   feature (the feature transformed),
+     *   name (the name of property that store the transformed values),
+     *   labels (an array of unique labels created for each feature),
+     *   text
+     */
+    DRESS.oneHot = (subjects, features, names = null) => {
+        const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
+        const replacement = names && (names.length === features.length);
+        const pad2 = replacement && names.reduce((max, name) => Math.max(max, name.length), 0);
+        //
+        const numSubject = subjects.length;
+        return features.map((feature, index) => {
+            const name = replacement ? names[index] : feature;
+            const vectors = new Array(numSubject);
+            const labels = [];
+            let i = numSubject;
+            while (i--) {
+                let values = DRESS.get(subjects[i], feature);
+                if (Array.isArray(values)) {
+                    values = values.filter(value => value);
+                }
+                else {
+                    values = values ? [values] : [];
+                }
+                let j = values.length;
+                while (j--) {
+                    let labelIndex = labels.indexOf(String(values[j]));
+                    if (labelIndex === -1) {
+                        labelIndex = labels.push(String(values[j])) - 1;
+                    }
+                    values[j] = labelIndex;
+                }
+                vectors[i] = values;
+            }
+            const numLabel = labels.length;
+            i = numSubject;
+            while (i--) {
+                let j = numLabel;
+                const object = {};
+                while (j--) {
+                    DRESS.set(object, labels[j], 0);
+                }
+                j = vectors[i].length;
+                while (j--) {
+                    DRESS.set(object, labels[vectors[i][j]], 1);
+                }
+                DRESS.set(subjects[i], name, object);
+            }
+            return {
+                feature,
+                name,
+                labels,
+                text: DRESS.padEnd(feature, pad) + (replacement ? (' >> ' + DRESS.padEnd(name, pad2)) : '') + ': ' + labels.join(', ')
+            };
+        });
+    };
+    /**
+     * @summary Reverse One-Hot Encoding on the specified features.
+     *
+     * @description This method reverses the one-hot encoding method on the specified categorical features. Each feature should be a property of the subject or is accessible using the dot notation.
+     * The value of each feature must be an one-hot encoding object created by the oneHot encoding method.
+     *
+     * For instance, a one-hot encoded feature called `Tobacco_Use` may be an object with three properties `Tobacco_Use.Current`, `Tobacco_Use.Former`, and `Tobacco_Use.Never`. The values of these properties must be numerical.
+     * If the threshold parameter is not set, then the property with the highest value (e.g. Tobacco_Use.Current = 0.9, Tobacco_Use.Former = 0.5, Tobacco_Use.Never = 0.2) will be selected as the decoded value (Tobacco_Use = Current).
+     * If the threshold parameter is set, then an properties with a value higher than the threshold will be selected as the decode values.
+     *
+     * NOTE: By default, this method is destructive and directly alters the values of the specified features. To store the transformed results in a different property, the names parameter must be specified.
+     *
+     * @param {object[]} subjects - The subjects to be processed.
+     * @param {string[]} features - An array of features to be processed.
+     * @param {string[]} [names=null] - An array of property names to be used to store the results. It MUST be of the same length as the features array.
+     * @param {number} [threshold=null] - The decoding threshold. Default to null, which means only the property with the highest value will be selected.
+     *
+     * @returns {object[]} An array of transformation parameters for debugging purposes. For each transformed feature, the following parameters are returned:
+     *   feature (the feature transformed),
+     *   name (the name of property that store the transformed values),
+     *   text
+     */
+    DRESS.hotOne = (subjects, features, names = null, threshold = null) => {
+        const pad = features.reduce((max, feature) => Math.max(max, feature.length), 0);
+        const replacement = names && (names.length === features.length);
+        const pad2 = replacement && names.reduce((max, name) => Math.max(max, name.length), 0);
+        //
+        const numSubject = subjects.length;
+        return features.map((feature, index) => {
+            const name = replacement ? names[index] : feature;
+            let i = numSubject;
+            while (i--) {
+                const object = DRESS.get(subjects[i], feature);
+                if (threshold === null) {
+                    let label = null;
+                    let value = Number.NEGATIVE_INFINITY;
+                    for (const key in object) {
+                        if (object[key] > value) {
+                            value = object[key];
+                            label = key;
+                        }
+                    }
+                    DRESS.set(subjects[i], name, label);
+                }
+                else {
+                    let labels = [];
+                    for (const key in object) {
+                        if (object[key] >= threshold) {
+                            labels.push(key);
+                        }
+                    }
+                    DRESS.set(subjects[i], name, labels);
+                }
+            }
+            return {
+                feature,
+                name,
+                text: DRESS.padEnd(feature, pad) + (replacement ? (' >> ' + DRESS.padEnd(name, pad2)) : '')
+            };
+        });
     };
 })(DRESS || (DRESS = {}));

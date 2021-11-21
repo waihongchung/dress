@@ -205,15 +205,28 @@ var DRESS;
                 });
             },
             performance(subjects, outcome, classification = true, k = 5, weighted = true) {
-                return classification ?
-                    DRESS.accuracies(subjects.map(subject => [
-                        DRESS.categoric(DRESS.get(subject, outcome)),
-                        this.predict(subject, outcome, true, k, weighted)
-                    ])) :
-                    DRESS.errors(subjects.map(subject => [
-                        DRESS.numeric(DRESS.get(subject, outcome)),
-                        this.predict(subject, outcome, false, k, weighted)
-                    ]));
+                const numSubject = subjects.length;
+                const predictions = new Array(numSubject);
+                if (classification) {
+                    let i = numSubject;
+                    while (i--) {
+                        predictions[i] = [
+                            DRESS.categoric(DRESS.get(subjects[i], outcome)),
+                            this.predict(subjects[i], outcome, true, k, weighted)
+                        ];
+                    }
+                    return DRESS.accuracies(predictions);
+                }
+                else {
+                    let i = numSubject;
+                    while (i--) {
+                        predictions[i] = [
+                            DRESS.numeric(DRESS.get(subjects[i], outcome)),
+                            this.predict(subjects[i], outcome, false, k, weighted)
+                        ];
+                    }
+                    return DRESS.errors(predictions);
+                }
             },
             impute(subjects, features, categorical = false, k = 5, weighted = true) {
                 const numNeighbor = this.neighbors.length;

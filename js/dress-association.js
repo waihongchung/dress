@@ -319,7 +319,7 @@ var DRESS;
                     Y2 += y * y;
                     XY += x * y;
                 }
-                const r = (numSubject * XY - X * Y) / (Math.sqrt(numSubject * X2 - X * X) * Math.sqrt(numSubject * Y2 - Y * Y));
+                const r = (numSubject * XY - X * Y) / (numSubject * Math.sqrt((X2 - X * X / numSubject) * (Y2 - Y * Y / numSubject)) + 1e-8);
                 const zR = Math.log((1 + r) / (1 - r)) / 2;
                 const ci = [(Math.exp(2 * (zR - zCI)) - 1) / (Math.exp(2 * (zR - zCI)) + 1), (Math.exp(2 * (zR + zCI)) - 1) / (Math.exp(2 * (zR + zCI)) + 1)];
                 const t = r * Math.sqrt((numSubject - 2) / (1 - r * r));

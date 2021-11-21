@@ -51,6 +51,7 @@ var DRESS;
      * @param {string[]} features - The features to be analyzed.
      * @param {number} [k=1] - The number of matches for each subject.
      * @param {boolean} [greedy=true] - Greedy matching or optimal matching. Default to greedy.
+     * @param {any} [logistic=DRESS.logistic] - A logistic regression algoritmh. Default to DRESS.logistic.
      * @returns {object[]} An array of matched controls.
      */
     DRESS.propensity = (subjects, controls, features, k = 1, greedy = true, logistic = DRESS.logistic) => {
@@ -162,5 +163,97 @@ var DRESS;
             }
         }
         return matches;
+    };
+    /**
+     * @summary Adaptive Synthetic Sampling
+     *
+     * @description This method creates new samples using a modified Adaptive Synthetic Sampling (ADASYN) approach, which belows to a family of Synthetic Minority Oversampling Technique (SMOTE).
+     * The algorithm automatically identify the majority class and the minority classes, based on the values of the outcome variable.
+     * It proceeds to build a kNN model in order to identify the nearest neighbors around each minority sample. It synthesizes new samples that are similar, but not identical to those minority samples by adding random noises.
+     *
+     * This implemention represents an improvement over vanilla ADASYN algorithm by enabling synthesis of categorical features and by considering the Euclidean distance between the samples,
+     * in addition to their distributin densities.
+     *
+     * @param {object[]} subjects - The subjects to be processed.
+    *  @param {string} outcome - A categorical outcome used to determine class membership.
+     * @param {string[]} numericals - An array of numerical features to synthesize.
+     * @param {string[]} categoricals - An array of categorical features to synthesize.
+     * @param {number} [ratio=1] - The minimal ratio between the majority class and the minority class. Default to 1, which means the classes will be perfectly balanced.
+     * @param {number} [k=5] - The number of neighbors to consider. Default to 5.
+     * @param {any} [kNN=DRESS.kNN] - A kNN algorithm. Default to DRESS.kNN
+     *
+     * @returns - An array of newly synthesized samples.
+     */
+    DRESS.adaptiveSynthesis = (subjects, outcome, numericals, categoricals, ratio = 1, k = 5, kNN = DRESS.kNN) => {
+        const numSubject = subjects.length;
+        // Distribute subjects by outcome classes
+        const classes = new Map();
+        let i = numSubject;
+        while (i--) {
+            const value = DRESS.categoric(DRESS.get(subjects[i], outcome));
+            if (classes.has(value)) {
+                classes.get(value).push(subjects[i]);
+            }
+            else {
+                classes.set(value, [subjects[i]]);
+            }
+        }
+        // Identify majority and minority classes
+        const minorities = [...classes.entries()].sort((a, b) => a[1].length - b[1].length);
+        const majority = minorities.pop();
+        // Build a kNN model
+        const model = kNN(subjects, numericals, categoricals, true);
+        const synthetics = [];
+        minorities.map(minority => {
+            const G = (majority[1].length * ratio - minority[1].length);
+            if (G > 0) {
+                const subjects = minority[1];
+                const numSubject = subjects.length;
+                const neighborhoods = new Array(numSubject).fill(null).map(_ => new Array());
+                const Rs = new Array(numSubject).fill(0);
+                let R = 0;
+                let i = numSubject;
+                while (i--) {
+                    // Get nearest k subjects       
+                    const nearests = model.nearest(subjects[i], k);
+                    let j = nearests.length;
+                    while (j--) {
+                        const cls = DRESS.categoric(DRESS.get(nearests[j][0][0], outcome));
+                        if (cls === minority[0]) {
+                            // Add minority subject to neighborhoods
+                            neighborhoods[i].push(nearests[j][0][0]);
+                        }
+                        else {
+                            // Add inversed distance to Rs
+                            Rs[i] += 1 / (nearests[j][1] + 1);
+                        }
+                    }
+                    R += Rs[i];
+                }
+                i = numSubject;
+                while (i--) {
+                    // Number of synthetics to be made in this neighorhoods
+                    let j = Math.round(R ? G * Rs[i] / R : G / numSubject);
+                    while (j--) {
+                        // Pick a random neighbor
+                        const subject = subjects[i];
+                        const neighbor = neighborhoods[i][Math.floor(neighborhoods[i].length * DRESS.random())];
+                        const synthetic = {};
+                        numericals.map(numerical => {
+                            const rand = DRESS.random();
+                            // Pick a random point between the subject and the random neighbor
+                            DRESS.set(synthetic, numerical, DRESS.numeric(DRESS.get(subject, numerical)) * rand + DRESS.numeric(DRESS.get(neighbor, numerical)) * (1 - rand));
+                        });
+                        categoricals.map(categorical => {
+                            // Pick a categorical value randomly.
+                            DRESS.set(synthetic, categorical, (DRESS.random() > 0.5) ? DRESS.get(subject, categorical) : DRESS.get(neighbor, categorical));
+                        });
+                        DRESS.set(synthetic, outcome, minority[0]);
+                        synthetics.push(synthetic);
+                    }
+                }
+            }
+        });
+        return synthetics;
     };
 })(DRESS || (DRESS = {}));

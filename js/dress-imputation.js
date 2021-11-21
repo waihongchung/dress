@@ -112,7 +112,7 @@ var DRESS;
      *
      * @param {object[]} subjects - The subjects to be processed.
      * @param {string[]} features - An array of features to be processed.
-     * @param {any[]} truths - A list of values that are considered as null.
+     * @param {any[]} nulls - A list of values that are considered as null.
      * @param {string[]} [names=null] - An array of property names to be used to store the results. It MUST be of the same length as the features array.
      * @returns {object[]} An array of transformation parameters for debugging purposes. For each transformed feature, the following parameters are returned:
      *   feature (the feature transformed),

@@ -265,6 +265,20 @@ var DRESS;
     /**
      * @ignore
      */
+    DRESS.randn = () => {
+        let u;
+        let v;
+        let s;
+        do {
+            u = DRESS.random() * 2 - 1;
+            v = DRESS.random() * 2 - 1;
+            s = u * u + v * v;
+        } while ((s === 0) || (s > 1));
+        return u * Math.sqrt(-2 * Math.log(s) / s);
+    };
+    /**
+     * @ignore
+     */
     DRESS.mode = (values) => {
         if (values.length === 0) {
             return null;

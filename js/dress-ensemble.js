@@ -177,10 +177,10 @@ var DRESS;
      *   importance (a method for reporting feature importance).
      */
     DRESS.randomForest = (subjects, outcome, numericals, categoricals, classification = true, hyperparameters = {}) => {
-        const minSize = Math.round(hyperparameters.size) || (classification ? 1 : 5);
-        const maxDepth = Math.round(hyperparameters.depth) || 5;
-        const numTree = Math.round(hyperparameters.trees) || 200;
-        const samplingRate = hyperparameters.sampling || 0.5;
+        const minSize = Math.round(hyperparameters.size || (hyperparameters.size = classification ? 1 : 5));
+        const maxDepth = Math.round(hyperparameters.depth || (hyperparameters.depth = 5));
+        const numTree = Math.round(hyperparameters.trees || (hyperparameters.trees = 200));
+        const samplingRate = (hyperparameters.sampling || (hyperparameters.sampling = 0.5));
         let seed;
         let trees;
         let impurity;
@@ -189,8 +189,8 @@ var DRESS;
             seed = DRESS.SEED;
             const numSubject = subjects.length;
             const rows = new Array(numSubject);
-            classes = [];
-            if (classification) {
+            classes = classification ? [] : null;
+            if (classes) {
                 let i = numSubject;
                 while (i--) {
                     const value = DRESS.categoric(DRESS.get(subjects[i], outcome));
@@ -225,7 +225,7 @@ var DRESS;
             outcome = subjects['outcome'] || '';
             numericals = subjects['numericals'] || [];
             categoricals = subjects['categoricals'] || [];
-            classes = subjects['classes'] || [];
+            classes = subjects['classes'] || null;
             trees = subjects['trees'] || [];
             impurity = subjects['impurity'] || 0;
         }
@@ -239,12 +239,12 @@ var DRESS;
             impurity,
             text: '[' + outcome + '] seed: ' + seed,
             predict(subject) {
-                const classification = this.classes.length;
+                const classification = this.classes;
                 const votes = harvest(features(subject, this.numericals, this.categoricals), this.numericals.length, this.trees, classification);
                 return classification ? this.classes[DRESS.mode(votes)] : DRESS.mean(votes);
             },
             roc(subjects, roc = DRESS.roc) {
-                if (this.classes.length) {
+                if (this.classes) {
                     const numSubject = subjects.length;
                     const numericals = this.numericals;
                     const numNumerical = numericals.length;
@@ -270,7 +270,6 @@ var DRESS;
                 return null;
             },
             performance(subjects) {
-                const classes = this.classes;
                 const numSubject = subjects.length;
                 const numericals = this.numericals;
                 const numNumerical = numericals.length;
@@ -278,7 +277,8 @@ var DRESS;
                 const outcome = this.outcome;
                 const trees = this.trees;
                 const predictions = new Array(numSubject);
-                if (classes.length) {
+                if (this.classes) {
+                    const classes = this.classes;
                     let i = numSubject;
                     while (i--) {
                         predictions[i] = [
@@ -352,11 +352,11 @@ var DRESS;
      *   importance (a method for reporting feature importance).
      */
     DRESS.gradientBoosting = (subjects, outcome, numericals, categoricals, classification = true, hyperparameters = {}) => {
-        const minSize = Math.round(hyperparameters.size) || (classification ? 1 : 5);
-        const maxDepth = Math.round(hyperparameters.depth) || 3;
-        const numTree = Math.round(hyperparameters.trees) || (classification ? 20 : 50);
-        const samplingRate = hyperparameters.sampling || 0.75;
-        const learningRate = hyperparameters.learning || 0.4;
+        const minSize = Math.round(hyperparameters.size || (hyperparameters.size = classification ? 1 : 5));
+        const maxDepth = Math.round(hyperparameters.depth || (hyperparameters.depth = 3));
+        const numTree = Math.round(hyperparameters.trees || (hyperparameters.trees = classification ? 20 : 50));
+        const samplingRate = (hyperparameters.sampling || (hyperparameters.sampling = 0.75));
+        const learningRate = (hyperparameters.learning || (hyperparameters.learning = 0.4));
         let seed;
         let trees;
         let impurities;
@@ -365,8 +365,8 @@ var DRESS;
             seed = DRESS.SEED;
             const numSubject = subjects.length;
             const rows = new Array(numSubject);
-            classes = [];
-            if (classification) {
+            classes = classification ? [] : null;
+            if (classes) {
                 let i = numSubject;
                 while (i--) {
                     const value = DRESS.categoric(DRESS.get(subjects[i], outcome));
@@ -413,7 +413,7 @@ var DRESS;
             };
             trees = [];
             impurities = [];
-            if (classification) {
+            if (classes) {
                 let clsIndex = classes.length;
                 while (clsIndex--) {
                     let i = numSubject;
@@ -436,7 +436,7 @@ var DRESS;
             outcome = subjects['outcome'] || '';
             numericals = subjects['numericals'] || [];
             categoricals = subjects['categoricals'] || [];
-            classes = subjects['classes'] || [];
+            classes = subjects['classes'] || null;
             trees = subjects['trees'] || [];
             impurities = subjects['impurities'] || [];
         }
@@ -450,7 +450,7 @@ var DRESS;
             impurities,
             text: '[' + outcome + '] seed: ' + seed,
             predict(subject) {
-                if (this.classes.length) {
+                if (this.classes) {
                     return this.classes.map((cls, index) => [cls, DRESS.sum(harvest(features(subject, this.numericals, this.categoricals), this.numericals.length, this.trees[index], false))])
                         .sort((a, b) => a[1] - b[1]).pop()[0];
                 }
@@ -459,7 +459,7 @@ var DRESS;
                 }
             },
             roc(subjects, roc = DRESS.roc) {
-                if (this.classes.length) {
+                if (this.classes) {
                     const numSubject = subjects.length;
                     const numClass = this.classes.length;
                     const numericals = this.numericals;
@@ -493,7 +493,7 @@ var DRESS;
                 const numSubject = subjects.length;
                 const outcome = this.outcome;
                 const predictions = new Array(numSubject);
-                if (this.classes.length) {
+                if (this.classes) {
                     let i = numSubject;
                     while (i--) {
                         predictions[i] = [
@@ -529,7 +529,7 @@ var DRESS;
                 const informationGain = new Map();
                 let trees = [];
                 let impurities = [];
-                if (this.classes.length) {
+                if (this.classes) {
                     let i = this.classes.length;
                     while (i--) {
                         trees = trees.concat(this.trees[i]);

@@ -22,18 +22,45 @@ var DRESS;
                     div(id);
                     const interval = setInterval(() => div(id).innerHTML = 'Processing...' + Math.floor((Date.now() - time) / 1000), 500);
                     parameter.then(value => {
-                        div(id).outerHTML = text(value);
+                        div(id).outerHTML = (typeof value === 'object') ? DRESS.text(value) : value;
                         clearInterval(interval);
                     });
                 }
                 else {
-                    div().innerHTML += '<p>' + text(parameter) + '</p>';
+                    div().innerHTML += '<p>' + DRESS.text(parameter) + '</p>';
                 }
             }
             else {
                 div().innerHTML += '<p>' + parameter + '</p>';
             }
         });
+    };
+    /**
+     * @summary Extract and format the text property from a result object.
+     *
+     * @description This method extracts the text property from a result object returned by other methods in the DRESS toolkit.
+     * It also loops through the child objects of the result object, extracts and formats the text properties from those child objects.
+     *
+     * @param results - A result object.
+     * @returns An HTML formatted text.
+     */
+    DRESS.text = (results) => {
+        const html = (Array.isArray(results) ? results : [results]).filter(result => result).map(result => {
+            const keys = Object.keys(result);
+            let output = '';
+            if (typeof result['text'] === 'string') {
+                const html = document.createElement('div').appendChild(document.createTextNode(result['text'])).parentNode.innerHTML;
+                output += ((typeof result['p'] === 'number') && (result['p'] < DRESS.SIGNIFICANCE)) ? '<span class="significant">' + html + '</span>' : html;
+                keys.map(key => {
+                    if (typeof result[key] === 'object') {
+                        const html = DRESS.text(result[key]);
+                        output += html ? '<div>' + html + '</div>' : '';
+                    }
+                });
+            }
+            return output ? '<p>' + output + '</p>' : '';
+        }).join('');
+        return html ? '<pre>' + html + '</pre>' : '';
     };
     /**
      * @summary Save the specified content as a file.
@@ -113,17 +140,17 @@ var DRESS;
      *
      * @param {string} method - The name of the method to be executed asynchronously.
      * @param {any[]} parameters - One or more parameters to be passed to the method being executed asychronously. The parameters MUST be a native Javascript type that can be cloned to the WebWorker.
-     * @returns {Promise} - A Promise that can be resolved into the result returned by the method being  executed asychronously.
+     * @returns {Promise} - A Promise that can be resolved into the result returned by the method being executed asychronously.
      */
     DRESS.async = (method, ...parameters) => {
         const scripts = Array.from(document.head.getElementsByTagName('SCRIPT')).map(script => "'" + script['src'] + "'");
         const url = URL.createObjectURL(new Blob([
             'importScripts(' + scripts.join(',') + ');' +
-                'DRESS = Object.assign(DRESS, JSON.parse(' + "'" + JSON.stringify(DRESS) + "'" + '));' +
-                'let get = (object, path) => path.split(".").reduce((object, segment) => ((object === null) || (typeof object[segment] === "undefined")) ? null : object[segment], object);' +
-                'let map = (parameters) => parameters.map(parameter => ((typeof parameter ==="object") && (typeof parameter["async"] === "string")) ? get(self, parameter["async"]) : parameter);' +
-                'let strip = (object) => {if (typeof object === "object") {for (let prop in object) {if (typeof object[prop] === "function") {delete object[prop]}}} return object};' +
-                'onmessage = (message) => postMessage(strip(' + method + '.apply(null, map(message.data))));'
+                'DRESS=Object.assign(DRESS,JSON.parse(' + "'" + JSON.stringify(DRESS) + "'" + '));' +
+                'let get=(object,path)=>path.split(".").reduce((object,segment)=>((object===null)||(typeof object[segment]==="undefined"))?null:object[segment],object);' +
+                'let map=(parameters)=>parameters.map(parameter=>((typeof parameter==="object")&&(typeof parameter["async"]==="string"))?get(self,parameter["async"]):parameter);' +
+                'let strip=(object)=>{if(typeof object==="object"){for(let prop in object){if(typeof object[prop]==="function"){delete object[prop]}}}return object};' +
+                'onmessage=(message)=>postMessage(strip(' + method + '.apply(null,map(message.data))));'
         ], { type: 'application/javascript' }));
         const worker = new Worker(url);
         worker.postMessage(parameters);
@@ -149,26 +176,5 @@ var DRESS;
             }
         }
         return e;
-    };
-    /**
-     * @ignore
-     */
-    let text = (results) => {
-        const html = (Array.isArray(results) ? results : [results]).filter(result => result).map(result => {
-            const keys = Object.keys(result);
-            let output = '';
-            if (typeof result['text'] === 'string') {
-                const html = document.createElement('div').appendChild(document.createTextNode(result['text'])).parentNode.innerHTML;
-                output += ((typeof result['p'] === 'number') && (result['p'] < DRESS.SIGNIFICANCE)) ? '<span class="significant">' + html + '</span>' : html;
-                keys.map(key => {
-                    if (typeof result[key] === 'object') {
-                        const html = text(result[key]);
-                        output += html ? '<div>' + html + '</div>' : '';
-                    }
-                });
-            }
-            return output ? '<p>' + output + '</p>' : '';
-        }).join('');
-        return html ? '<pre>' + html + '</pre>' : '';
     };
 })(DRESS || (DRESS = {}));
